@@ -1,0 +1,18 @@
+# Insumo legacy de referencia (no es parte del sistema nuevo): dump SQL
+# grande (86MB) y el codigo PHP/SQL original con datos reales de
+# clientes. Se usan como referencia de lectura (ver etl/ y los
+# comentarios en db/postgresql/*.sql que citan lineas puntuales), no se
+# versionan para no inflar el repo ni duplicar datos de negocio reales
+# en el historial de git.
+backup_desarrollo2013.sql
+COPIA_OF/
+
+# Node (cada subproyecto tiene ademas su propio .gitignore mas especifico)
+node_modules/
+dist/
+.env
+.env.local
+
+# Editor / OS
+.vscode/
+.DS_Store

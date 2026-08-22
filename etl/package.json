@@ -1,0 +1,16 @@
+{
+  "name": "albion-erp-etl-ingenieria",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Migracion de datos MySQL legacy (backup_desarrollo2013.sql, modulo Ingenieria/OF) hacia PostgreSQL",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mysql2": "^3.11.0",
+    "pg": "^8.12.0"
+  }
+}
