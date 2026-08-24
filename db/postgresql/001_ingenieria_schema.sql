@@ -132,8 +132,11 @@ CREATE TABLE ingenieria.operarios (
 );
 
 -- =====================================================================
--- CATALOGO DE ARTICULOS (minimo necesario para el BOM de Ingenieria;
--- el resto -stock, precios, proveedores- se disena en el modulo Almacen)
+-- CATALOGO DE ARTICULOS (BOM de Ingenieria + catalogo de compra; CRUD
+-- administrado por Compras -- ver 005_articulos_marcas_rubros.sql para
+-- categoria_id/marca_id/rubro_id/nc, agregados despues de este DDL
+-- original. Stock, precios e historial de existencias quedan afuera,
+-- son responsabilidad de Almacen/Inventario, no de Compras)
 -- =====================================================================
 
 CREATE TABLE catalogo.articulos (
@@ -150,7 +153,7 @@ CREATE TABLE catalogo.articulos (
     creado_en           TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE catalogo.articulos IS
-    'Version minima para soportar FKs del BOM de Ingenieria. Stock, precios e historial se normalizan en el modulo Almacen (legacy: columnas duplicadas Existencia/Existencia_chile, UltimoPrecio/2/3, PLANO_2..5).';
+    'Version minima para soportar FKs del BOM de Ingenieria. Stock, precios e historial se normalizan en el modulo Almacen/Inventario (legacy: columnas duplicadas Existencia/Existencia_chile, UltimoPrecio/2/3, PLANO_2..5). La columna estado se elimino y se agregaron marca_id/rubro_id/nc en 005_articulos_marcas_rubros.sql -- ver ese archivo para el detalle y las decisiones tomadas sobre cada campo legacy.';
 
 -- =====================================================================
 -- MAQUINAS (catalogo vigente = 'maquinas'; 'maquinas_2019' se archiva

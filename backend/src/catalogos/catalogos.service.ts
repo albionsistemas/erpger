@@ -36,15 +36,4 @@ export class CatalogosService {
     rubros() {
         return this.prisma.rubro.findMany({ orderBy: { nombre: 'asc' } });
     }
-
-    categorias() {
-        return this.prisma.categoria.findMany({ orderBy: { nombre: 'asc' } });
-    }
-
-    subcategorias(categoriaId?: number) {
-        return this.prisma.subcategoria.findMany({
-            where: categoriaId !== undefined ? { categoriaId } : undefined,
-            orderBy: { nombre: 'asc' },
-        });
-    }
 }

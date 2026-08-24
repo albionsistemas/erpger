@@ -6,6 +6,7 @@
 # en el historial de git.
 backup_desarrollo2013.sql
 COPIA_OF/
+COPIA_IMG/
 
 # Node (cada subproyecto tiene ademas su propio .gitignore mas especifico)
 node_modules/

@@ -1,4 +1,5 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ModoVenta } from '@prisma/client';
 
 export class CreateArticuloDto {
     @IsString()
@@ -16,11 +17,6 @@ export class CreateArticuloDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(150)
-    codigoAlbion?: string;
-
-    @IsOptional()
-    @IsString()
     @MaxLength(20)
     planoPrincipal?: string;
 
@@ -31,10 +27,23 @@ export class CreateArticuloDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(20)
-    estado?: string;
+    descripcion?: string;
 
     @IsOptional()
     @IsString()
-    descripcion?: string;
+    @MaxLength(30)
+    nc?: string;
+
+    @IsOptional()
+    @IsInt()
+    rubroId?: number;
+
+    @IsOptional()
+    @IsIn(['UNITARIO', 'LINEAL_MM', 'AREA_MM2'])
+    modoVenta?: ModoVenta;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    imagenUrl?: string;
 }

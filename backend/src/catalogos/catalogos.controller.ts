@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CatalogosService } from './catalogos.service';
 
 @Controller('catalogos')
@@ -38,15 +38,5 @@ export class CatalogosController {
     @Get('rubros')
     rubros() {
         return this.catalogos.rubros();
-    }
-
-    @Get('categorias')
-    categorias() {
-        return this.catalogos.categorias();
-    }
-
-    @Get('subcategorias')
-    subcategorias(@Query('categoriaId') categoriaId?: string) {
-        return this.catalogos.subcategorias(categoriaId ? Number(categoriaId) : undefined);
     }
 }

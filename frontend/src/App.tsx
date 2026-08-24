@@ -22,6 +22,10 @@ import { OrdenesTrabajoList, OrdenesTrabajoCreate, OrdenesTrabajoEdit, OrdenesTr
 import { MaquinasList, MaquinasCreate, MaquinasEdit, MaquinasShow } from './pages/maquinas'
 import { LayoutPlaceholder } from './pages/layout/LayoutPlaceholder'
 import { TiposMaquinaPage } from './pages/tipos-maquina/TiposMaquinaPage'
+import { CategoriasPage } from './pages/compras/CategoriasPage'
+import { SubcategoriasPage } from './pages/compras/SubcategoriasPage'
+import { MonedasPage } from './pages/compras/MonedasPage'
+import { ArticulosList, ArticulosCreate, ArticulosEdit, ArticulosShow } from './pages/articulos'
 
 function App() {
   return (
@@ -55,6 +59,14 @@ function App() {
             edit: '/maquinas/:id/editar',
             show: '/maquinas/:id',
             meta: { label: 'Maquinas' },
+          },
+          {
+            name: 'articulos',
+            list: '/articulos',
+            create: '/articulos/nuevo',
+            edit: '/articulos/:id/editar',
+            show: '/articulos/:id',
+            meta: { label: 'Articulos' },
           },
         ]}
         options={{
@@ -94,6 +106,15 @@ function App() {
             </Route>
             <Route path="/tipos-maquina" element={<TiposMaquinaPage />} />
             <Route path="/layout" element={<LayoutPlaceholder />} />
+            <Route path="/compras/categorias" element={<CategoriasPage />} />
+            <Route path="/compras/subcategorias" element={<SubcategoriasPage />} />
+            <Route path="/compras/monedas" element={<MonedasPage />} />
+            <Route path="/articulos">
+              <Route index element={<ArticulosList />} />
+              <Route path="nuevo" element={<ArticulosCreate />} />
+              <Route path=":id" element={<ArticulosShow />} />
+              <Route path=":id/editar" element={<ArticulosEdit />} />
+            </Route>
           </Route>
         </Routes>
         <UnsavedChangesNotifier />

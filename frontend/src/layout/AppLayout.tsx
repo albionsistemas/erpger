@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useLogout, useGetIdentity } from '@refinedev/core'
-import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut } from 'lucide-react'
+import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut, Boxes, ListTree, DollarSign, Package } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { getCurrentPayload } from '@/auth/token-storage'
@@ -32,6 +32,15 @@ const NAV: { grupo: string; items: NavItem[] }[] = [
     items: [
       { label: 'Ordenes de Fabricacion', to: '/ordenes-fabricacion', icon: FileText, modulo: 'planificacion' },
       { label: 'Ordenes de Trabajo', to: '/ordenes-trabajo', icon: ClipboardList, modulo: 'planificacion' },
+    ],
+  },
+  {
+    grupo: 'Compras',
+    items: [
+      { label: 'Categorias', to: '/compras/categorias', icon: Boxes, modulo: 'compras' },
+      { label: 'Subcategorias', to: '/compras/subcategorias', icon: ListTree, modulo: 'compras' },
+      { label: 'Monedas', to: '/compras/monedas', icon: DollarSign, modulo: 'compras' },
+      { label: 'Articulos', to: '/articulos', icon: Package, modulo: 'compras' },
     ],
   },
 ]

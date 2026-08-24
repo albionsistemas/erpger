@@ -1,11 +1,3 @@
-// Espejo en Prisma de db/postgresql/001_ingenieria_schema.sql.
-// El DDL de ese archivo es la fuente de verdad (se aplica a mano / via
-// psql); este schema.prisma se mantiene sincronizado con el. NO correr
-// "prisma migrate dev" contra este proyecto todavia (generaria su propio
-// historial de migraciones en paralelo al DDL); usar "prisma db pull"
-// despues de aplicar el DDL para re-sincronizar si hace falta, o editar
-// ambos archivos a mano en paralelo mientras el modulo esta en desarrollo.
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
@@ -17,56 +9,593 @@ datasource db {
   schemas  = ["catalogo", "core", "ingenieria"]
 }
 
-// =====================================================================
-// STUBS de otros modulos
-// =====================================================================
-
 model Usuario {
-  id            BigInt   @id @default(autoincrement())
-  username      String   @unique @db.VarChar(30)
-  nombre        String?  @db.VarChar(100)
-  passwordHash  String?  @map("password_hash") @db.VarChar(255)
-  email         String?  @unique @db.VarChar(255)
-  imagenUrl     String?  @map("imagen_url") @db.VarChar(255)
-  activo        Boolean  @default(true)
-  esSuperadmin  Boolean  @default(false) @map("es_superadmin")
-  empresaId     BigInt?  @map("empresa_id")
-  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  id                       BigInt                 @id @default(autoincrement())
+  username                 String                 @unique @db.VarChar(30)
+  nombre                   String?                @db.VarChar(100)
+  passwordHash             String?                @map("password_hash") @db.VarChar(255)
+  email                    String?                @unique @db.VarChar(255)
+  imagenUrl                String?                @map("imagen_url") @db.VarChar(255)
+  activo                   Boolean                @default(true)
+  esSuperadmin             Boolean                @default(false) @map("es_superadmin")
+  creadoEn                 DateTime               @default(now()) @map("creado_en") @db.Timestamptz(6)
+  empresaId                BigInt?                @map("empresa_id")
+  articuloPreciosCreados   ArticuloPrecio[]
+  articulosCreados         Articulo[]             @relation("ArticuloCreadoPor")
+  cotizacionesCreadas      Cotizacion[]
+  permisos                 UsuarioModuloPermiso[]
+  empresa                  Empresa?               @relation(fields: [empresaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  despieceEnsamblesCreados DespieceEnsamble[]     @relation("DespieceEnsambleCreadoPor")
+  despieceMaquinasCreados  DespieceMaquina[]      @relation("DespieceMaquinaCreadoPor")
+  despieceOtCreados        DespieceOt[]           @relation("DespieceOtCreadoPor")
+  maquinasCreadas          Maquina[]              @relation("MaquinaCreadoPor")
+  ofsCreadas               OrdenFabricacion[]     @relation("OfCreadoPor")
+  ofsComoVendedor          OrdenFabricacion[]     @relation("OfVendedor")
+  otsCreadas               OrdenTrabajo[]         @relation("OtCreadoPor")
+  otsRevisadas             OrdenTrabajo[]         @relation("OtRevisadoPor")
+  cambiosComoAnterior      OtCambio[]             @relation("OtCambioUsuarioAnterior")
+  cambiosComoNuevo         OtCambio[]             @relation("OtCambioUsuarioNuevo")
+  etapasCompletadas        OtEtapa[]              @relation("OtEtapaUsuario")
+  planificacionesCreadas   PlanificacionCorte[]   @relation("PlanificacionCreadoPor")
+  tareasCreadas            Tarea[]                @relation("TareaCreadoPor")
 
-  empresa  Empresa?               @relation(fields: [empresaId], references: [id])
-  permisos UsuarioModuloPermiso[]
-
-  articulosCreados         Articulo[]         @relation("ArticuloCreadoPor")
-  maquinasCreadas          Maquina[]          @relation("MaquinaCreadoPor")
-  ofsComoVendedor          OrdenFabricacion[] @relation("OfVendedor")
-  ofsCreadas               OrdenFabricacion[] @relation("OfCreadoPor")
-  otsRevisadas             OrdenTrabajo[]     @relation("OtRevisadoPor")
-  otsCreadas               OrdenTrabajo[]     @relation("OtCreadoPor")
-  etapasCompletadas        OtEtapa[]          @relation("OtEtapaUsuario")
-  tareasCreadas            Tarea[]            @relation("TareaCreadoPor")
-  despieceMaquinasCreados  DespieceMaquina[]  @relation("DespieceMaquinaCreadoPor")
-  despieceEnsamblesCreados DespieceEnsamble[] @relation("DespieceEnsambleCreadoPor")
-  despieceOtCreados        DespieceOt[]       @relation("DespieceOtCreadoPor")
-  cambiosComoAnterior      OtCambio[]         @relation("OtCambioUsuarioAnterior")
-  cambiosComoNuevo         OtCambio[]         @relation("OtCambioUsuarioNuevo")
-  planificacionesCreadas   PlanificacionCorte[] @relation("PlanificacionCreadoPor")
-
+  @@index([empresaId], map: "idx_usuarios_empresa")
   @@map("usuarios")
   @@schema("core")
 }
 
-// Seam minimo de multi-tenancy (ver 003_empresas.sql): solo existe en
-// Auth por ahora. Las tablas de negocio (ingenieria/catalogo) NO tienen
-// empresa_id todavia -- se agrega cuando haya un segundo tenant real.
 model Empresa {
-  id     BigInt  @id @default(autoincrement())
-  nombre String  @db.VarChar(150)
-  activa Boolean @default(true)
-
+  id       BigInt    @id @default(autoincrement())
+  nombre   String    @db.VarChar(150)
+  activa   Boolean   @default(true)
   usuarios Usuario[]
 
   @@map("empresas")
   @@schema("core")
+}
+
+model Modulo {
+  id       Int                    @id @default(autoincrement()) @db.SmallInt
+  clave    String                 @unique @db.VarChar(30)
+  nombre   String                 @db.VarChar(60)
+  permisos UsuarioModuloPermiso[]
+
+  @@map("modulos")
+  @@schema("core")
+}
+
+model UsuarioModuloPermiso {
+  usuarioId BigInt       @map("usuario_id")
+  moduloId  Int          @map("modulo_id") @db.SmallInt
+  nivel     NivelPermiso @default(SIN_ACCESO)
+  modulo    Modulo       @relation(fields: [moduloId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuario   Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([usuarioId, moduloId])
+  @@index([usuarioId], map: "idx_usuario_modulo_permisos_usuario")
+  @@map("usuario_modulo_permisos")
+  @@schema("core")
+}
+
+model Cliente {
+  id                 BigInt             @id @default(autoincrement())
+  razonSocial        String             @map("razon_social") @db.VarChar(255)
+  ordenesFabricacion OrdenFabricacion[]
+
+  @@map("clientes")
+  @@schema("catalogo")
+}
+
+model TipoOrden {
+  id                 Int                @id @default(autoincrement()) @db.SmallInt
+  nombre             String             @unique @db.VarChar(30)
+  ordenesFabricacion OrdenFabricacion[]
+
+  @@map("tipos_orden")
+  @@schema("ingenieria")
+}
+
+model EstadoOf {
+  id                 Int                @id @default(autoincrement()) @db.SmallInt
+  nombre             String             @unique @db.VarChar(30)
+  ordenesFabricacion OrdenFabricacion[]
+
+  @@map("estados_of")
+  @@schema("ingenieria")
+}
+
+model EstadoOt {
+  id             Int            @id @default(autoincrement()) @db.SmallInt
+  nombre         String         @unique @db.VarChar(20)
+  ordenesTrabajo OrdenTrabajo[]
+
+  @@map("estados_ot")
+  @@schema("ingenieria")
+}
+
+model SectorProduccion {
+  id        Int        @id @default(autoincrement()) @db.SmallInt
+  nombre    String     @unique @db.VarChar(30)
+  orden     Int        @default(0) @db.SmallInt
+  operarios Operario[]
+  otEtapas  OtEtapa[]
+  tareas    Tarea[]
+
+  @@map("sectores_produccion")
+  @@schema("ingenieria")
+}
+
+model TipoMaquina {
+  id       Int       @id @default(autoincrement()) @db.SmallInt
+  codigo   String?   @db.VarChar(10)
+  nombre   String    @db.VarChar(60)
+  maquinas Maquina[]
+
+  @@map("tipos_maquina")
+  @@schema("ingenieria")
+}
+
+model TipoCambioBom {
+  id        Int        @id @default(autoincrement()) @db.SmallInt
+  nombre    String     @unique @db.VarChar(20)
+  otCambios OtCambio[]
+
+  @@map("tipos_cambio_bom")
+  @@schema("ingenieria")
+}
+
+model Rubro {
+  id                 Int                @id @default(autoincrement()) @db.SmallInt
+  nombre             String             @unique @db.VarChar(60)
+  articulos          Articulo[]
+  maquinasRubros     MaquinaRubro[]
+  ordenesFabricacion OrdenFabricacion[]
+
+  @@map("rubros")
+  @@schema("catalogo")
+}
+
+model Categoria {
+  id            Int            @id @default(autoincrement()) @db.SmallInt
+  nombre        String         @unique @db.VarChar(100)
+  articulos     Articulo[]
+  subcategorias Subcategoria[]
+
+  @@map("categorias")
+  @@schema("catalogo")
+}
+
+model Subcategoria {
+  id          Int        @id @default(autoincrement())
+  categoriaId Int        @map("categoria_id") @db.SmallInt
+  nombre      String     @db.VarChar(255)
+  articulos   Articulo[]
+  categoria   Categoria  @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("subcategorias")
+  @@schema("catalogo")
+}
+
+model Operario {
+  id                 BigInt               @id @default(autoincrement())
+  nombre             String               @db.VarChar(100)
+  sectorId           Int?                 @map("sector_id") @db.SmallInt
+  activo             Boolean              @default(true)
+  imagenUrl          String?              @map("imagen_url") @db.VarChar(255)
+  sector             SectorProduccion?    @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  planificacionCorte PlanificacionCorte[]
+  tareas             Tarea[]
+
+  @@map("operarios")
+  @@schema("ingenieria")
+}
+
+model Articulo {
+  id                    BigInt             @id @default(autoincrement())
+  nombre                String             @db.VarChar(255)
+  categoriaId           Int?               @map("categoria_id") @db.SmallInt
+  subcategoriaId        Int?               @map("subcategoria_id")
+  codigoAlbion          String?            @map("codigo_albion") @db.VarChar(150)
+  planoPrincipal        String?            @map("plano_principal") @db.VarChar(20)
+  denominacionComercial String?            @map("denominacion_comercial") @db.VarChar(120)
+  descripcion           String?
+  creadoPor             BigInt?            @map("creado_por")
+  creadoEn              DateTime           @default(now()) @map("creado_en") @db.Timestamptz(6)
+  nc                    String?            @db.VarChar(30)
+  rubroId               Int?               @map("rubro_id") @db.SmallInt
+  modoVenta             ModoVenta?         @map("modo_venta")
+  imagenUrl             String?            @map("imagen_url") @db.VarChar(255)
+  precios               ArticuloPrecio[]
+  categoria             Categoria?         @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creador               Usuario?           @relation("ArticuloCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rubro                 Rubro?             @relation(fields: [rubroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subcategoria          Subcategoria?      @relation(fields: [subcategoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  despieceEnsambles     DespieceEnsamble[]
+  despieceMaquinas      DespieceMaquina[]
+  despieceOt            DespieceOt[]
+  cambiosAnterior       OtCambio[]         @relation("OtCambioArticuloAnterior")
+  cambiosNuevo          OtCambio[]         @relation("OtCambioArticuloNuevo")
+
+  @@map("articulos")
+  @@schema("catalogo")
+}
+
+model Maquina {
+  id                   BigInt         @id @default(autoincrement())
+  planoId              String         @unique @map("plano_id") @db.VarChar(30)
+  tipoMaquinaId        Int?           @map("tipo_maquina_id") @db.SmallInt
+  nombre               String         @db.VarChar(255)
+  detalle              String?        @db.VarChar(255)
+  descripcion          String?
+  usos                 String?        @db.VarChar(100)
+  tipoHierro           String?        @map("tipo_hierro") @db.VarChar(20)
+  anchoMm              Int?           @map("ancho_mm")
+  largoMm              Int?           @map("largo_mm")
+  altoMm               Int?           @map("alto_mm")
+  anchoUtilMm          Int?           @map("ancho_util_mm")
+  largoUtilMm          Int?           @map("largo_util_mm")
+  diametroMm           Int?           @map("diametro_mm")
+  capacidad            Int?
+  imagenUrl            String?        @map("imagen_url") @db.VarChar(255)
+  pdfUrl               String?        @map("pdf_url") @db.VarChar(255)
+  dxfUrl               String?        @map("dxf_url") @db.VarChar(255)
+  precioLista          Decimal?       @map("precio_lista") @db.Decimal(14, 2)
+  moneda               String?        @db.Char(3)
+  valorMateriales      Decimal?       @map("valor_materiales") @db.Decimal(14, 2)
+  fechaValorMateriales DateTime?      @map("fecha_valor_materiales") @db.Date
+  creadoPor            BigInt?        @map("creado_por")
+  creadoEn             DateTime       @default(now()) @map("creado_en") @db.Timestamptz(6)
+  creador              Usuario?       @relation("MaquinaCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoMaquina          TipoMaquina?   @relation(fields: [tipoMaquinaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rubros               MaquinaRubro[]
+  ordenesTrabajo       OrdenTrabajo[]
+
+  @@index([planoId], map: "idx_maquinas_plano")
+  @@map("maquinas")
+  @@schema("ingenieria")
+}
+
+model MaquinaRubro {
+  maquinaId BigInt  @map("maquina_id")
+  rubroId   Int     @map("rubro_id") @db.SmallInt
+  maquina   Maquina @relation(fields: [maquinaId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  rubro     Rubro   @relation(fields: [rubroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([maquinaId, rubroId])
+  @@map("maquinas_rubros")
+  @@schema("ingenieria")
+}
+
+model OrdenFabricacion {
+  id             BigInt         @id @default(autoincrement())
+  numeroOf       Int            @unique @map("numero_of")
+  tipoOrdenId    Int            @map("tipo_orden_id") @db.SmallInt
+  clienteId      BigInt?        @map("cliente_id")
+  fecha          DateTime       @db.Date
+  fechaEntrega   DateTime?      @map("fecha_entrega") @db.Date
+  rubroId        Int?           @map("rubro_id") @db.SmallInt
+  referencia     String?        @db.VarChar(50)
+  nota           String?
+  layoutUrl      String?        @map("layout_url") @db.VarChar(255)
+  pautasUrl      String?        @map("pautas_url") @db.VarChar(255)
+  vendedorId     BigInt?        @map("vendedor_id")
+  estadoId       Int            @map("estado_id") @db.SmallInt
+  creadoPor      BigInt?        @map("creado_por")
+  creadoEn       DateTime       @default(now()) @map("creado_en") @db.Timestamptz(6)
+  cliente        Cliente?       @relation(fields: [clienteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creador        Usuario?       @relation("OfCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  estado         EstadoOf       @relation(fields: [estadoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rubro          Rubro?         @relation(fields: [rubroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoOrden      TipoOrden      @relation(fields: [tipoOrdenId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vendedor       Usuario?       @relation("OfVendedor", fields: [vendedorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ordenesTrabajo OrdenTrabajo[]
+
+  @@index([clienteId], map: "idx_of_cliente")
+  @@index([estadoId], map: "idx_of_estado")
+  @@map("ordenes_fabricacion")
+  @@schema("ingenieria")
+}
+
+model OrdenTrabajo {
+  id                 BigInt               @id @default(autoincrement())
+  ofId               BigInt               @map("of_id")
+  numeroOt           Int                  @unique @map("numero_ot")
+  maquinaId          BigInt?              @map("maquina_id")
+  maquinaNombre      String               @map("maquina_nombre") @db.VarChar(150)
+  cantidad           Int                  @default(1) @db.SmallInt
+  plano              String?              @db.VarChar(20)
+  fecha              DateTime             @db.Date
+  fechaEjecucion     DateTime?            @map("fecha_ejecucion") @db.Date
+  nota               String?
+  referencia         String?              @db.VarChar(200)
+  observaciones      String?              @db.VarChar(200)
+  estadoId           Int?                 @map("estado_id") @db.SmallInt
+  revisadoPor        BigInt?              @map("revisado_por")
+  placa              String?              @db.VarChar(20)
+  serie              String?              @db.VarChar(10)
+  motor              String?              @db.VarChar(80)
+  fichaTecnicaId     BigInt?              @map("ficha_tecnica_id")
+  fichaDocumento     String?              @map("ficha_documento") @db.VarChar(200)
+  version            String?              @db.VarChar(8)
+  ftd                Int?                 @db.SmallInt
+  creadoPor          BigInt?              @map("creado_por")
+  creadoEn           DateTime             @default(now()) @map("creado_en") @db.Timestamptz(6)
+  despieceOt         DespieceOt[]
+  creador            Usuario?             @relation("OtCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  estado             EstadoOt?            @relation(fields: [estadoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  maquina            Maquina?             @relation(fields: [maquinaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ordenFabricacion   OrdenFabricacion     @relation(fields: [ofId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  revisor            Usuario?             @relation("OtRevisadoPor", fields: [revisadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cambios            OtCambio[]
+  etapas             OtEtapa[]
+  imagenes           OtImagen[]
+  terceros           OtTercero[]
+  planificacionCorte PlanificacionCorte[]
+  tareas             Tarea[]
+
+  @@index([estadoId], map: "idx_ot_estado")
+  @@index([ofId], map: "idx_ot_of")
+  @@map("ordenes_trabajo")
+  @@schema("ingenieria")
+}
+
+model OtEtapa {
+  id              BigInt           @id @default(autoincrement())
+  otId            BigInt           @map("ot_id")
+  sectorId        Int              @map("sector_id") @db.SmallInt
+  completada      Boolean          @default(false)
+  fechaCompletada DateTime?        @map("fecha_completada") @db.Date
+  usuarioId       BigInt?          @map("usuario_id")
+  ordenTrabajo    OrdenTrabajo     @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sector          SectorProduccion @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario         Usuario?         @relation("OtEtapaUsuario", fields: [usuarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([otId, sectorId])
+  @@map("ot_etapas")
+  @@schema("ingenieria")
+}
+
+model OtTercero {
+  id           BigInt       @id @default(autoincrement())
+  otId         BigInt       @map("ot_id")
+  tercero      String       @db.VarChar(60)
+  fechaInicio  DateTime?    @map("fecha_inicio") @db.Date
+  fechaEntrega DateTime?    @map("fecha_entrega") @db.Date
+  ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("ot_terceros")
+  @@schema("ingenieria")
+}
+
+model OtImagen {
+  id           BigInt       @id @default(autoincrement())
+  otId         BigInt       @map("ot_id")
+  url          String       @db.VarChar(255)
+  orden        Int          @default(0) @db.SmallInt
+  ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("ot_imagenes")
+  @@schema("ingenieria")
+}
+
+model Tarea {
+  id               BigInt           @id @default(autoincrement())
+  otId             BigInt           @map("ot_id")
+  sectorId         Int              @map("sector_id") @db.SmallInt
+  nombreTarea      String           @map("nombre_tarea") @db.VarChar(100)
+  fechaInicio      DateTime?        @map("fecha_inicio") @db.Date
+  fechaTerminacion DateTime?        @map("fecha_terminacion") @db.Date
+  operarioId       BigInt?          @map("operario_id")
+  creadoPor        BigInt?          @map("creado_por")
+  creadoEn         DateTime         @default(now()) @map("creado_en") @db.Timestamptz(6)
+  creador          Usuario?         @relation("TareaCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  operario         Operario?        @relation(fields: [operarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ordenTrabajo     OrdenTrabajo     @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  sector           SectorProduccion @relation(fields: [sectorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([otId], map: "idx_tareas_ot")
+  @@map("tareas")
+  @@schema("ingenieria")
+}
+
+model DespieceMaquina {
+  id                  BigInt    @id @default(autoincrement())
+  item                Int       @db.SmallInt
+  plano               String?   @db.VarChar(30)
+  piezaCodigo         String?   @map("pieza_codigo") @db.VarChar(20)
+  denominacion        String?   @db.VarChar(130)
+  articuloId          BigInt?   @map("articulo_id")
+  anchoMm             Int?      @map("ancho_mm")
+  largoMm             Int?      @map("largo_mm")
+  cantidad            Int
+  tipoCorte           String?   @map("tipo_corte") @db.VarChar(10)
+  nota                String?   @db.VarChar(100)
+  esChapa             Boolean?  @map("es_chapa")
+  cantidadComprar     Int?      @map("cantidad_comprar")
+  metrosLargoTotal    Int?      @map("metros_largo_total")
+  metrosCantidadTotal Int?      @map("metros_cantidad_total")
+  barrasCantidad      Int?      @map("barras_cantidad")
+  observacionesCorte  String?   @map("observaciones_corte") @db.VarChar(100)
+  esRepuesto          Boolean?  @map("es_repuesto")
+  verificaStock       Boolean?  @map("verifica_stock")
+  creadoPor           BigInt?   @map("creado_por")
+  creadoEn            DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  articulo            Articulo? @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creador             Usuario?  @relation("DespieceMaquinaCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([plano], map: "idx_despiece_maq_plano")
+  @@map("despiece_maquinas")
+  @@schema("ingenieria")
+}
+
+model DespieceEnsamble {
+  id                  BigInt    @id @default(autoincrement())
+  item                Int       @db.SmallInt
+  plano               String?   @db.VarChar(30)
+  piezaCodigo         String?   @map("pieza_codigo") @db.VarChar(20)
+  denominacion        String?   @db.VarChar(130)
+  articuloId          BigInt?   @map("articulo_id")
+  anchoMm             Int?      @map("ancho_mm")
+  largoMm             Int?      @map("largo_mm")
+  cantidad            Int
+  tipoCorte           String?   @map("tipo_corte") @db.VarChar(10)
+  nota                String?   @db.VarChar(100)
+  esChapa             Boolean?  @map("es_chapa")
+  cantidadComprar     Int?      @map("cantidad_comprar")
+  metrosLargoTotal    Int?      @map("metros_largo_total")
+  metrosCantidadTotal Int?      @map("metros_cantidad_total")
+  barrasCantidad      Int?      @map("barras_cantidad")
+  observacionesCorte  String?   @map("observaciones_corte") @db.VarChar(100)
+  esRepuesto          Boolean?  @map("es_repuesto")
+  verificaStock       Boolean?  @map("verifica_stock")
+  creadoPor           BigInt?   @map("creado_por")
+  creadoEn            DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  articulo            Articulo? @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_despiece_ensambles_articulo")
+  creador             Usuario?  @relation("DespieceEnsambleCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_despiece_ensambles_usuario")
+
+  @@map("despiece_ensambles")
+  @@schema("ingenieria")
+}
+
+model DespieceOt {
+  id                   BigInt                   @id @default(autoincrement())
+  item                 Int                      @db.SmallInt
+  plano                String?                  @db.VarChar(30)
+  piezaCodigo          String?                  @map("pieza_codigo") @db.VarChar(20)
+  denominacion         String?                  @db.VarChar(130)
+  articuloId           BigInt?                  @map("articulo_id")
+  anchoMm              Int?                     @map("ancho_mm")
+  largoMm              Int?                     @map("largo_mm")
+  cantidad             Int
+  tipoCorte            String?                  @map("tipo_corte") @db.VarChar(10)
+  nota                 String?                  @db.VarChar(100)
+  esChapa              Boolean?                 @map("es_chapa")
+  cantidadComprar      Int?                     @map("cantidad_comprar")
+  metrosLargoTotal     Int?                     @map("metros_largo_total")
+  metrosCantidadTotal  Int?                     @map("metros_cantidad_total")
+  barrasCantidad       Int?                     @map("barras_cantidad")
+  observacionesCorte   String?                  @map("observaciones_corte") @db.VarChar(100)
+  esRepuesto           Boolean?                 @map("es_repuesto")
+  verificaStock        Boolean?                 @map("verifica_stock")
+  creadoPor            BigInt?                  @map("creado_por")
+  creadoEn             DateTime                 @default(now()) @map("creado_en") @db.Timestamptz(6)
+  otId                 BigInt                   @map("ot_id")
+  planificacionId      BigInt?                  @map("planificacion_id")
+  fechaCorteFinalizado DateTime?                @map("fecha_corte_finalizado") @db.Timestamptz(6)
+  operacion            String?                  @db.VarChar(10)
+  ordenTrabajo         OrdenTrabajo             @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  articulo             Articulo?                @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_despiece_ot_articulo")
+  planificacion        PlanificacionCorte?      @relation(fields: [planificacionId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_despiece_ot_planificacion")
+  creador              Usuario?                 @relation("DespieceOtCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_despiece_ot_usuario")
+  planificacionItems   PlanificacionCorteItem[]
+
+  @@index([articuloId], map: "idx_despiece_ot_articulo")
+  @@index([otId], map: "idx_despiece_ot_ot")
+  @@map("despiece_ot")
+  @@schema("ingenieria")
+}
+
+model OtCambio {
+  id                 BigInt        @id @default(autoincrement())
+  otId               BigInt?       @map("ot_id")
+  fecha              DateTime      @default(now()) @db.Timestamptz(6)
+  plano              String?       @db.VarChar(30)
+  piezaCodigo        String?       @map("pieza_codigo") @db.VarChar(30)
+  denominacion       String?       @db.VarChar(50)
+  tipoCambioId       Int           @map("tipo_cambio_id") @db.SmallInt
+  articuloAnteriorId BigInt?       @map("articulo_anterior_id")
+  anchoAnteriorMm    Int?          @map("ancho_anterior_mm")
+  largoAnteriorMm    Int?          @map("largo_anterior_mm")
+  cantidadAnterior   Int?          @map("cantidad_anterior")
+  usuarioAnteriorId  BigInt?       @map("usuario_anterior_id")
+  articuloNuevoId    BigInt?       @map("articulo_nuevo_id")
+  anchoNuevoMm       Int?          @map("ancho_nuevo_mm")
+  largoNuevoMm       Int?          @map("largo_nuevo_mm")
+  cantidadNuevo      Int?          @map("cantidad_nuevo")
+  usuarioNuevoId     BigInt?       @map("usuario_nuevo_id")
+  articuloAnterior   Articulo?     @relation("OtCambioArticuloAnterior", fields: [articuloAnteriorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  articuloNuevo      Articulo?     @relation("OtCambioArticuloNuevo", fields: [articuloNuevoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ordenTrabajo       OrdenTrabajo? @relation(fields: [otId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoCambio         TipoCambioBom @relation(fields: [tipoCambioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarioAnterior    Usuario?      @relation("OtCambioUsuarioAnterior", fields: [usuarioAnteriorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarioNuevo       Usuario?      @relation("OtCambioUsuarioNuevo", fields: [usuarioNuevoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([otId], map: "idx_ot_cambios_ot")
+  @@map("ot_cambios")
+  @@schema("ingenieria")
+}
+
+model PlanificacionCorte {
+  id           BigInt                   @id @default(autoincrement())
+  otId         BigInt                   @map("ot_id")
+  fechaInicio  DateTime                 @map("fecha_inicio") @db.Date
+  fechaEntrega DateTime                 @map("fecha_entrega") @db.Date
+  operarioId   BigInt?                  @map("operario_id")
+  nota         String?                  @db.VarChar(250)
+  creadoPor    BigInt?                  @map("creado_por")
+  creadoEn     DateTime                 @default(now()) @map("creado_en") @db.Timestamptz(6)
+  despieceOt   DespieceOt[]
+  creador      Usuario?                 @relation("PlanificacionCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  operario     Operario?                @relation(fields: [operarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ordenTrabajo OrdenTrabajo             @relation(fields: [otId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items        PlanificacionCorteItem[]
+
+  @@map("planificacion_corte")
+  @@schema("ingenieria")
+}
+
+model PlanificacionCorteItem {
+  planificacionId BigInt             @map("planificacion_id")
+  despieceOtId    BigInt             @map("despiece_ot_id")
+  despieceOt      DespieceOt         @relation(fields: [despieceOtId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  planificacion   PlanificacionCorte @relation(fields: [planificacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([planificacionId, despieceOtId])
+  @@map("planificacion_corte_items")
+  @@schema("ingenieria")
+}
+
+model ArticuloPrecio {
+  id         BigInt   @id @default(autoincrement())
+  articuloId BigInt   @map("articulo_id")
+  precioUsd  Decimal  @map("precio_usd") @db.Decimal(14, 4)
+  fecha      DateTime @default(now()) @db.Timestamptz(6)
+  motivo     String?  @db.VarChar(255)
+  creadoPor  BigInt?  @map("creado_por")
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  articulo   Articulo @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  creador    Usuario? @relation(fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([articuloId, fecha(sort: Desc)], map: "idx_articulo_precios_articulo_fecha")
+  @@map("articulo_precios")
+  @@schema("catalogo")
+}
+
+model Cotizacion {
+  id         BigInt   @id @default(autoincrement())
+  monedaId   Int      @map("moneda_id") @db.SmallInt
+  tasaCambio Decimal  @map("tasa_cambio") @db.Decimal(12, 4)
+  fecha      DateTime @default(now()) @db.Timestamptz(6)
+  fuente     String   @default("MANUAL") @db.VarChar(20)
+  creadoPor  BigInt?  @map("creado_por")
+  creador    Usuario? @relation(fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moneda     Moneda   @relation(fields: [monedaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([monedaId, fecha(sort: Desc)], map: "idx_cotizaciones_moneda_fecha")
+  @@map("cotizaciones")
+  @@schema("catalogo")
+}
+
+model Moneda {
+  id           Int          @id @default(autoincrement()) @db.SmallInt
+  codigoIso    String       @unique @map("codigo_iso") @db.VarChar(3)
+  nombre       String       @db.VarChar(50)
+  simbolo      String?      @db.VarChar(5)
+  activa       Boolean      @default(true)
+  cotizaciones Cotizacion[]
+
+  @@map("monedas")
+  @@schema("catalogo")
 }
 
 enum NivelPermiso {
@@ -78,556 +607,11 @@ enum NivelPermiso {
   @@schema("core")
 }
 
-model Modulo {
-  id     Int    @id @default(autoincrement())
-  clave  String @unique @db.VarChar(30)
-  nombre String @db.VarChar(60)
+enum ModoVenta {
+  UNITARIO
+  LINEAL_MM
+  AREA_MM2
 
-  permisos UsuarioModuloPermiso[]
-
-  @@map("modulos")
-  @@schema("core")
-}
-
-model UsuarioModuloPermiso {
-  usuarioId BigInt       @map("usuario_id")
-  moduloId  Int          @map("modulo_id")
-  nivel     NivelPermiso @default(SIN_ACCESO)
-
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  modulo  Modulo  @relation(fields: [moduloId], references: [id], onDelete: Cascade)
-
-  @@id([usuarioId, moduloId])
-  @@map("usuario_modulo_permisos")
-  @@schema("core")
-}
-
-model Cliente {
-  id           BigInt @id @default(autoincrement())
-  razonSocial  String @map("razon_social") @db.VarChar(255)
-
-  ordenesFabricacion OrdenFabricacion[]
-
-  @@map("clientes")
+  @@map("modo_venta")
   @@schema("catalogo")
-}
-
-// =====================================================================
-// CATALOGOS DEL MODULO
-// =====================================================================
-
-model TipoOrden {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(30)
-
-  ordenesFabricacion OrdenFabricacion[]
-
-  @@map("tipos_orden")
-  @@schema("ingenieria")
-}
-
-model EstadoOf {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(30)
-
-  ordenesFabricacion OrdenFabricacion[]
-
-  @@map("estados_of")
-  @@schema("ingenieria")
-}
-
-model EstadoOt {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(20)
-
-  ordenesTrabajo OrdenTrabajo[]
-
-  @@map("estados_ot")
-  @@schema("ingenieria")
-}
-
-model SectorProduccion {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(30)
-  orden  Int    @default(0)
-
-  operarios Operario[]
-  otEtapas  OtEtapa[]
-  tareas    Tarea[]
-
-  @@map("sectores_produccion")
-  @@schema("ingenieria")
-}
-
-model TipoMaquina {
-  id     Int     @id @default(autoincrement())
-  codigo String? @db.VarChar(10)
-  nombre String  @db.VarChar(60)
-
-  maquinas Maquina[]
-
-  @@map("tipos_maquina")
-  @@schema("ingenieria")
-}
-
-model TipoCambioBom {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(20)
-
-  otCambios OtCambio[]
-
-  @@map("tipos_cambio_bom")
-  @@schema("ingenieria")
-}
-
-model Rubro {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(60)
-
-  ordenesFabricacion OrdenFabricacion[]
-  maquinasRubros     MaquinaRubro[]
-
-  @@map("rubros")
-  @@schema("catalogo")
-}
-
-model Categoria {
-  id     Int    @id @default(autoincrement())
-  nombre String @unique @db.VarChar(100)
-
-  articulos     Articulo[]
-  subcategorias Subcategoria[]
-
-  @@map("categorias")
-  @@schema("catalogo")
-}
-
-model Subcategoria {
-  id          Int    @id @default(autoincrement())
-  categoriaId Int    @map("categoria_id")
-  nombre      String @db.VarChar(255)
-
-  categoria Categoria  @relation(fields: [categoriaId], references: [id])
-  articulos Articulo[]
-
-  @@map("subcategorias")
-  @@schema("catalogo")
-}
-
-// =====================================================================
-// OPERARIOS
-// =====================================================================
-
-model Operario {
-  id        BigInt  @id @default(autoincrement())
-  nombre    String  @db.VarChar(100)
-  sectorId  Int?    @map("sector_id")
-  activo    Boolean @default(true)
-  imagenUrl String? @map("imagen_url") @db.VarChar(255)
-
-  sector             SectorProduccion? @relation(fields: [sectorId], references: [id])
-  tareas             Tarea[]
-  planificacionCorte PlanificacionCorte[]
-
-  @@map("operarios")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// CATALOGO DE ARTICULOS
-// =====================================================================
-
-model Articulo {
-  id                    BigInt   @id @default(autoincrement())
-  nombre                String   @db.VarChar(255)
-  categoriaId           Int?     @map("categoria_id")
-  subcategoriaId        Int?     @map("subcategoria_id")
-  codigoAlbion          String?  @map("codigo_albion") @db.VarChar(150)
-  planoPrincipal        String?  @map("plano_principal") @db.VarChar(20)
-  denominacionComercial String?  @map("denominacion_comercial") @db.VarChar(120)
-  estado                String   @default("Nuevo") @db.VarChar(20)
-  descripcion           String?
-  creadoPor             BigInt?  @map("creado_por")
-  creadoEn              DateTime @default(now()) @map("creado_en") @db.Timestamptz
-
-  categoria    Categoria?    @relation(fields: [categoriaId], references: [id])
-  subcategoria Subcategoria? @relation(fields: [subcategoriaId], references: [id])
-  creador      Usuario?      @relation("ArticuloCreadoPor", fields: [creadoPor], references: [id])
-
-  despieceMaquinas  DespieceMaquina[]
-  despieceEnsambles DespieceEnsamble[]
-  despieceOt        DespieceOt[]
-  cambiosAnterior   OtCambio[] @relation("OtCambioArticuloAnterior")
-  cambiosNuevo      OtCambio[] @relation("OtCambioArticuloNuevo")
-
-  @@map("articulos")
-  @@schema("catalogo")
-}
-
-// =====================================================================
-// MAQUINAS
-// =====================================================================
-
-model Maquina {
-  id                    BigInt    @id @default(autoincrement())
-  planoId               String    @unique @map("plano_id") @db.VarChar(30)
-  tipoMaquinaId         Int?      @map("tipo_maquina_id")
-  nombre                String    @db.VarChar(255)
-  detalle               String?   @db.VarChar(255)
-  descripcion           String?
-  usos                  String?   @db.VarChar(100)
-  tipoHierro            String?   @map("tipo_hierro") @db.VarChar(20)
-  anchoMm               Int?      @map("ancho_mm")
-  largoMm               Int?      @map("largo_mm")
-  altoMm                Int?      @map("alto_mm")
-  anchoUtilMm           Int?      @map("ancho_util_mm")
-  largoUtilMm           Int?      @map("largo_util_mm")
-  diametroMm            Int?      @map("diametro_mm")
-  capacidad             Int?
-  imagenUrl             String?   @map("imagen_url") @db.VarChar(255)
-  pdfUrl                String?   @map("pdf_url") @db.VarChar(255)
-  dxfUrl                String?   @map("dxf_url") @db.VarChar(255)
-  precioLista           Decimal?  @map("precio_lista") @db.Decimal(14, 2)
-  moneda                String?   @db.Char(3)
-  valorMateriales       Decimal?  @map("valor_materiales") @db.Decimal(14, 2)
-  fechaValorMateriales  DateTime? @map("fecha_valor_materiales") @db.Date
-  creadoPor             BigInt?   @map("creado_por")
-  creadoEn              DateTime  @default(now()) @map("creado_en") @db.Timestamptz
-
-  tipoMaquina TipoMaquina? @relation(fields: [tipoMaquinaId], references: [id])
-  creador     Usuario?     @relation("MaquinaCreadoPor", fields: [creadoPor], references: [id])
-
-  ordenesTrabajo OrdenTrabajo[]
-  rubros         MaquinaRubro[]
-
-  @@map("maquinas")
-  @@schema("ingenieria")
-}
-
-model MaquinaRubro {
-  maquinaId BigInt @map("maquina_id")
-  rubroId   Int    @map("rubro_id")
-
-  maquina Maquina @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
-  rubro   Rubro   @relation(fields: [rubroId], references: [id])
-
-  @@id([maquinaId, rubroId])
-  @@map("maquinas_rubros")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// ORDENES DE FABRICACION (OF) Y ORDENES DE TRABAJO (OT)
-// =====================================================================
-
-model OrdenFabricacion {
-  id           BigInt    @id @default(autoincrement())
-  numeroOf     Int       @unique @map("numero_of")
-  tipoOrdenId  Int       @map("tipo_orden_id")
-  clienteId    BigInt?   @map("cliente_id")
-  fecha        DateTime  @db.Date
-  fechaEntrega DateTime? @map("fecha_entrega") @db.Date
-  rubroId      Int?      @map("rubro_id")
-  referencia   String?   @db.VarChar(50)
-  nota         String?
-  layoutUrl    String?   @map("layout_url") @db.VarChar(255)
-  pautasUrl    String?   @map("pautas_url") @db.VarChar(255)
-  vendedorId   BigInt?   @map("vendedor_id")
-  estadoId     Int       @map("estado_id")
-  creadoPor    BigInt?   @map("creado_por")
-  creadoEn     DateTime  @default(now()) @map("creado_en") @db.Timestamptz
-
-  tipoOrden TipoOrden @relation(fields: [tipoOrdenId], references: [id])
-  cliente   Cliente?  @relation(fields: [clienteId], references: [id])
-  rubro     Rubro?    @relation(fields: [rubroId], references: [id])
-  vendedor  Usuario?  @relation("OfVendedor", fields: [vendedorId], references: [id])
-  estado    EstadoOf  @relation(fields: [estadoId], references: [id])
-  creador   Usuario?  @relation("OfCreadoPor", fields: [creadoPor], references: [id])
-
-  ordenesTrabajo OrdenTrabajo[]
-
-  @@map("ordenes_fabricacion")
-  @@schema("ingenieria")
-}
-
-model OrdenTrabajo {
-  id               BigInt    @id @default(autoincrement())
-  ofId             BigInt    @map("of_id")
-  numeroOt         Int       @unique @map("numero_ot")
-  maquinaId        BigInt?   @map("maquina_id")
-  maquinaNombre    String    @map("maquina_nombre") @db.VarChar(150)
-  cantidad         Int       @default(1)
-  plano            String?   @db.VarChar(20)
-  fecha            DateTime  @db.Date
-  fechaEjecucion   DateTime? @map("fecha_ejecucion") @db.Date
-  nota             String?
-  referencia       String?   @db.VarChar(200)
-  observaciones    String?   @db.VarChar(200)
-  estadoId         Int?      @map("estado_id")
-  revisadoPor      BigInt?   @map("revisado_por")
-  placa            String?   @db.VarChar(20)
-  serie            String?   @db.VarChar(10)
-  motor            String?   @db.VarChar(80)
-  fichaTecnicaId   BigInt?   @map("ficha_tecnica_id")
-  fichaDocumento   String?   @map("ficha_documento") @db.VarChar(200)
-  version          String?   @db.VarChar(8)
-  ftd              Int?
-  creadoPor        BigInt?   @map("creado_por")
-  creadoEn         DateTime  @default(now()) @map("creado_en") @db.Timestamptz
-
-  ordenFabricacion OrdenFabricacion @relation(fields: [ofId], references: [id], onDelete: Cascade)
-  maquina          Maquina?         @relation(fields: [maquinaId], references: [id])
-  estado           EstadoOt?        @relation(fields: [estadoId], references: [id])
-  revisor          Usuario?         @relation("OtRevisadoPor", fields: [revisadoPor], references: [id])
-  creador          Usuario?         @relation("OtCreadoPor", fields: [creadoPor], references: [id])
-
-  etapas             OtEtapa[]
-  terceros           OtTercero[]
-  imagenes           OtImagen[]
-  tareas             Tarea[]
-  despieceOt         DespieceOt[]
-  cambios            OtCambio[]
-  planificacionCorte PlanificacionCorte[]
-
-  @@map("ordenes_trabajo")
-  @@schema("ingenieria")
-}
-
-model OtEtapa {
-  id              BigInt    @id @default(autoincrement())
-  otId            BigInt    @map("ot_id")
-  sectorId        Int       @map("sector_id")
-  completada      Boolean   @default(false)
-  fechaCompletada DateTime? @map("fecha_completada") @db.Date
-  usuarioId       BigInt?   @map("usuario_id")
-
-  ordenTrabajo OrdenTrabajo     @relation(fields: [otId], references: [id], onDelete: Cascade)
-  sector       SectorProduccion @relation(fields: [sectorId], references: [id])
-  usuario      Usuario?         @relation("OtEtapaUsuario", fields: [usuarioId], references: [id])
-
-  @@unique([otId, sectorId])
-  @@map("ot_etapas")
-  @@schema("ingenieria")
-}
-
-model OtTercero {
-  id            BigInt    @id @default(autoincrement())
-  otId          BigInt    @map("ot_id")
-  tercero       String    @db.VarChar(60)
-  fechaInicio   DateTime? @map("fecha_inicio") @db.Date
-  fechaEntrega  DateTime? @map("fecha_entrega") @db.Date
-
-  ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade)
-
-  @@map("ot_terceros")
-  @@schema("ingenieria")
-}
-
-model OtImagen {
-  id    BigInt @id @default(autoincrement())
-  otId  BigInt @map("ot_id")
-  url   String @db.VarChar(255)
-  orden Int    @default(0)
-
-  ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade)
-
-  @@map("ot_imagenes")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// TAREAS
-// =====================================================================
-
-model Tarea {
-  id                BigInt    @id @default(autoincrement())
-  otId              BigInt    @map("ot_id")
-  sectorId          Int       @map("sector_id")
-  nombreTarea       String    @map("nombre_tarea") @db.VarChar(100)
-  fechaInicio       DateTime? @map("fecha_inicio") @db.Date
-  fechaTerminacion  DateTime? @map("fecha_terminacion") @db.Date
-  operarioId        BigInt?   @map("operario_id")
-  creadoPor         BigInt?   @map("creado_por")
-  creadoEn          DateTime  @default(now()) @map("creado_en") @db.Timestamptz
-
-  ordenTrabajo OrdenTrabajo     @relation(fields: [otId], references: [id], onDelete: Cascade)
-  sector       SectorProduccion @relation(fields: [sectorId], references: [id])
-  operario     Operario?        @relation(fields: [operarioId], references: [id])
-  creador      Usuario?         @relation("TareaCreadoPor", fields: [creadoPor], references: [id])
-
-  @@map("tareas")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// BOM / DESPIECE (3 tablas separadas por decision de negocio)
-// =====================================================================
-
-model DespieceMaquina {
-  id                    BigInt   @id @default(autoincrement())
-  item                  Int
-  plano                 String?  @db.VarChar(30)
-  piezaCodigo           String?  @map("pieza_codigo") @db.VarChar(20)
-  denominacion          String?  @db.VarChar(130)
-  articuloId            BigInt?  @map("articulo_id")
-  anchoMm               Int?     @map("ancho_mm")
-  largoMm               Int?     @map("largo_mm")
-  cantidad              Int
-  tipoCorte             String?  @map("tipo_corte") @db.VarChar(10)
-  nota                  String?  @db.VarChar(100)
-  esChapa               Boolean? @map("es_chapa")
-  cantidadComprar       Int?     @map("cantidad_comprar")
-  metrosLargoTotal      Int?     @map("metros_largo_total")
-  metrosCantidadTotal   Int?     @map("metros_cantidad_total")
-  barrasCantidad        Int?     @map("barras_cantidad")
-  observacionesCorte    String?  @map("observaciones_corte") @db.VarChar(100)
-  esRepuesto            Boolean? @map("es_repuesto")
-  verificaStock         Boolean? @map("verifica_stock")
-  creadoPor             BigInt?  @map("creado_por")
-  creadoEn              DateTime @default(now()) @map("creado_en") @db.Timestamptz
-
-  articulo Articulo? @relation(fields: [articuloId], references: [id])
-  creador  Usuario?  @relation("DespieceMaquinaCreadoPor", fields: [creadoPor], references: [id])
-
-  @@map("despiece_maquinas")
-  @@schema("ingenieria")
-}
-
-model DespieceEnsamble {
-  id                    BigInt   @id @default(autoincrement())
-  item                  Int
-  plano                 String?  @db.VarChar(30)
-  piezaCodigo           String?  @map("pieza_codigo") @db.VarChar(20)
-  denominacion          String?  @db.VarChar(130)
-  articuloId            BigInt?  @map("articulo_id")
-  anchoMm               Int?     @map("ancho_mm")
-  largoMm               Int?     @map("largo_mm")
-  cantidad              Int
-  tipoCorte             String?  @map("tipo_corte") @db.VarChar(10)
-  nota                  String?  @db.VarChar(100)
-  esChapa               Boolean? @map("es_chapa")
-  cantidadComprar       Int?     @map("cantidad_comprar")
-  metrosLargoTotal      Int?     @map("metros_largo_total")
-  metrosCantidadTotal   Int?     @map("metros_cantidad_total")
-  barrasCantidad        Int?     @map("barras_cantidad")
-  observacionesCorte    String?  @map("observaciones_corte") @db.VarChar(100)
-  esRepuesto            Boolean? @map("es_repuesto")
-  verificaStock         Boolean? @map("verifica_stock")
-  creadoPor             BigInt?  @map("creado_por")
-  creadoEn              DateTime @default(now()) @map("creado_en") @db.Timestamptz
-
-  articulo Articulo? @relation(fields: [articuloId], references: [id])
-  creador  Usuario?  @relation("DespieceEnsambleCreadoPor", fields: [creadoPor], references: [id])
-
-  @@map("despiece_ensambles")
-  @@schema("ingenieria")
-}
-
-model DespieceOt {
-  id                    BigInt    @id @default(autoincrement())
-  item                  Int
-  plano                 String?   @db.VarChar(30)
-  piezaCodigo           String?   @map("pieza_codigo") @db.VarChar(20)
-  denominacion          String?   @db.VarChar(130)
-  articuloId            BigInt?   @map("articulo_id")
-  anchoMm               Int?      @map("ancho_mm")
-  largoMm               Int?      @map("largo_mm")
-  cantidad              Int
-  tipoCorte             String?   @map("tipo_corte") @db.VarChar(10)
-  nota                  String?   @db.VarChar(100)
-  esChapa               Boolean?  @map("es_chapa")
-  cantidadComprar       Int?      @map("cantidad_comprar")
-  metrosLargoTotal      Int?      @map("metros_largo_total")
-  metrosCantidadTotal   Int?      @map("metros_cantidad_total")
-  barrasCantidad        Int?      @map("barras_cantidad")
-  observacionesCorte    String?   @map("observaciones_corte") @db.VarChar(100)
-  esRepuesto            Boolean?  @map("es_repuesto")
-  verificaStock         Boolean?  @map("verifica_stock")
-  creadoPor             BigInt?   @map("creado_por")
-  creadoEn              DateTime  @default(now()) @map("creado_en") @db.Timestamptz
-  otId                  BigInt    @map("ot_id")
-  planificacionId       BigInt?   @map("planificacion_id")
-  fechaCorteFinalizado  DateTime? @map("fecha_corte_finalizado") @db.Timestamptz
-  operacion             String?   @db.VarChar(10)
-
-  articulo     Articulo?           @relation(fields: [articuloId], references: [id])
-  creador      Usuario?            @relation("DespieceOtCreadoPor", fields: [creadoPor], references: [id])
-  ordenTrabajo OrdenTrabajo        @relation(fields: [otId], references: [id], onDelete: Cascade)
-  planificacion PlanificacionCorte? @relation(fields: [planificacionId], references: [id])
-
-  planificacionItems PlanificacionCorteItem[]
-
-  @@map("despiece_ot")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// BITACORA DE CAMBIOS DEL DESPIECE
-// =====================================================================
-
-model OtCambio {
-  id                  BigInt   @id @default(autoincrement())
-  otId                BigInt?  @map("ot_id")
-  fecha               DateTime @default(now()) @db.Timestamptz
-  plano               String?  @db.VarChar(30)
-  piezaCodigo         String?  @map("pieza_codigo") @db.VarChar(30)
-  denominacion        String?  @db.VarChar(50)
-  tipoCambioId        Int      @map("tipo_cambio_id")
-  articuloAnteriorId  BigInt?  @map("articulo_anterior_id")
-  anchoAnteriorMm     Int?     @map("ancho_anterior_mm")
-  largoAnteriorMm     Int?     @map("largo_anterior_mm")
-  cantidadAnterior    Int?     @map("cantidad_anterior")
-  usuarioAnteriorId   BigInt?  @map("usuario_anterior_id")
-  articuloNuevoId     BigInt?  @map("articulo_nuevo_id")
-  anchoNuevoMm        Int?     @map("ancho_nuevo_mm")
-  largoNuevoMm        Int?     @map("largo_nuevo_mm")
-  cantidadNuevo       Int?     @map("cantidad_nuevo")
-  usuarioNuevoId      BigInt?  @map("usuario_nuevo_id")
-
-  ordenTrabajo      OrdenTrabajo?  @relation(fields: [otId], references: [id])
-  tipoCambio        TipoCambioBom  @relation(fields: [tipoCambioId], references: [id])
-  articuloAnterior  Articulo?      @relation("OtCambioArticuloAnterior", fields: [articuloAnteriorId], references: [id])
-  usuarioAnterior   Usuario?       @relation("OtCambioUsuarioAnterior", fields: [usuarioAnteriorId], references: [id])
-  articuloNuevo     Articulo?      @relation("OtCambioArticuloNuevo", fields: [articuloNuevoId], references: [id])
-  usuarioNuevo      Usuario?       @relation("OtCambioUsuarioNuevo", fields: [usuarioNuevoId], references: [id])
-
-  @@map("ot_cambios")
-  @@schema("ingenieria")
-}
-
-// =====================================================================
-// PLANIFICACION DE CORTE
-// =====================================================================
-
-model PlanificacionCorte {
-  id            BigInt   @id @default(autoincrement())
-  otId          BigInt   @map("ot_id")
-  fechaInicio   DateTime @map("fecha_inicio") @db.Date
-  fechaEntrega  DateTime @map("fecha_entrega") @db.Date
-  operarioId    BigInt?  @map("operario_id")
-  nota          String?  @db.VarChar(250)
-  creadoPor     BigInt?  @map("creado_por")
-  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz
-
-  ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id])
-  operario     Operario?    @relation(fields: [operarioId], references: [id])
-  creador      Usuario?     @relation("PlanificacionCreadoPor", fields: [creadoPor], references: [id])
-
-  despieceOt DespieceOt[]
-  items      PlanificacionCorteItem[]
-
-  @@map("planificacion_corte")
-  @@schema("ingenieria")
-}
-
-model PlanificacionCorteItem {
-  planificacionId BigInt @map("planificacion_id")
-  despieceOtId    BigInt @map("despiece_ot_id")
-
-  planificacion PlanificacionCorte @relation(fields: [planificacionId], references: [id], onDelete: Cascade)
-  despieceOt    DespieceOt         @relation(fields: [despieceOtId], references: [id], onDelete: Cascade)
-
-  @@id([planificacionId, despieceOtId])
-  @@map("planificacion_corte_items")
-  @@schema("ingenieria")
 }

@@ -12,7 +12,7 @@ interface ResourceModuloConfig {
 // seccion "Reparto de modulos"). Ingenieria = maquinas/BOM/tecnico;
 // Planificacion = OF/OT (cuando y quien las ejecuta). Operarios/Articulos
 // son catalogos con lectura abierta pero CRUD de otro modulo (RRHH y
-// Almacen respectivamente) -- Ingenieria los necesita para elegir un
+// Compras respectivamente) -- Ingenieria los necesita para elegir un
 // operario/articulo al armar el despiece, sin poder darlos de alta.
 const RESOURCE_MODULO: Record<string, ResourceModuloConfig> = {
   maquinas: { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
@@ -21,7 +21,7 @@ const RESOURCE_MODULO: Record<string, ResourceModuloConfig> = {
   'despiece-ot': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
   'ot-cambios': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
   operarios: { writeModulo: 'rrhh' },
-  articulos: { writeModulo: 'almacen' },
+  articulos: { writeModulo: 'compras' },
   'ordenes-fabricacion': { readModulo: 'planificacion', writeModulo: 'planificacion' },
   'ordenes-trabajo': { readModulo: 'planificacion', writeModulo: 'planificacion' },
   'planificacion-corte': { readModulo: 'planificacion', writeModulo: 'planificacion' },
