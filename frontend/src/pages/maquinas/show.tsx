@@ -1,6 +1,6 @@
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
-import { Pencil } from 'lucide-react'
+import { Pencil, ImageOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -72,11 +72,17 @@ export function MaquinasShow() {
               <p className="font-medium whitespace-pre-wrap">{result.descripcion}</p>
             </div>
           )}
-          {result.imagenUrl && (
-            <div className="col-span-3">
+          <div className="col-span-3">
+            <p className="mb-1 text-muted-foreground">Imagen</p>
+            {result.imagenUrl ? (
               <img src={result.imagenUrl} alt={result.nombre} className="max-w-xs rounded-md border" />
-            </div>
-          )}
+            ) : (
+              <div className="flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-muted-foreground">
+                <ImageOff className="h-6 w-6" />
+                <span className="text-xs">Sin imagen</span>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

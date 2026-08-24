@@ -1,26 +1,39 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTable, useGo, useDelete, type CrudFilter } from '@refinedev/core'
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, ImageOff, FileText } from 'lucide-react'
+import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface MaquinaRow {
   id: number
   planoId: string
   nombre: string
-  detalle: string | null
-  tipoMaquina: { nombre: string } | null
+  imagenUrl: string | null
+  pdfUrl: string | null
 }
+
+const SIN_FILTRO = 'todos'
 
 export function MaquinasList() {
   const [buscar, setBuscar] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState<string>(SIN_FILTRO)
+  const [tiposMaquina, setTiposMaquina] = useState<{ id: number; nombre: string }[]>([])
   const go = useGo()
   const { mutate: deleteMaquina } = useDelete()
 
-  const filters: CrudFilter[] = buscar ? [{ field: 'buscar', operator: 'eq', value: buscar }] : []
+  useEffect(() => {
+    apiClient.get('/tipos-maquina').then((res) => setTiposMaquina(res.data))
+  }, [])
+
+  const filters: CrudFilter[] = [
+    ...(buscar ? [{ field: 'buscar', operator: 'eq' as const, value: buscar }] : []),
+    ...(filtroTipo !== SIN_FILTRO ? [{ field: 'tipoMaquinaId', operator: 'eq' as const, value: filtroTipo }] : []),
+  ]
 
   const { result, currentPage, setCurrentPage, pageCount, tableQuery } = useTable<MaquinaRow>({
     resource: 'maquinas',
@@ -40,21 +53,36 @@ export function MaquinasList() {
         </Button>
       </div>
 
-      <Input
-        placeholder="Buscar por nombre o plano..."
-        value={buscar}
-        onChange={(e) => setBuscar(e.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex gap-3">
+        <Input
+          placeholder="Buscar por nombre o plano..."
+          value={buscar}
+          onChange={(e) => setBuscar(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+          <SelectTrigger className="max-w-xs">
+            <SelectValue placeholder="Todos los tipos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={SIN_FILTRO}>Todos los tipos</SelectItem>
+            {tiposMaquina.map((t) => (
+              <SelectItem key={t.id} value={String(t.id)}>
+                {t.nombre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Imagen</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Nombre</TableHead>
-              <TableHead>Detalle</TableHead>
-              <TableHead>Tipo</TableHead>
+              <TableHead>Recursos</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -75,10 +103,24 @@ export function MaquinasList() {
             )}
             {result.data.map((m) => (
               <TableRow key={m.id}>
+                <TableCell>
+                  {m.imagenUrl ? (
+                    <img src={m.imagenUrl} alt={m.nombre} className="h-10 w-10 rounded object-cover border" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded border border-dashed text-muted-foreground">
+                      <ImageOff className="h-4 w-4" />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{m.planoId}</TableCell>
                 <TableCell>{m.nombre}</TableCell>
-                <TableCell>{m.detalle ?? '-'}</TableCell>
-                <TableCell>{m.tipoMaquina?.nombre ?? '-'}</TableCell>
+                <TableCell>
+                  {m.pdfUrl && (
+                    <a href={m.pdfUrl} target="_blank" rel="noreferrer" title="Ver PDF">
+                      <FileText className="h-5 w-5 text-red-600" />
+                    </a>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/maquinas/${m.id}` })}>
