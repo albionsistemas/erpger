@@ -221,34 +221,30 @@ model Articulo {
 }
 
 model Maquina {
-  id                   BigInt         @id @default(autoincrement())
-  planoId              String         @unique @map("plano_id") @db.VarChar(30)
-  tipoMaquinaId        Int?           @map("tipo_maquina_id") @db.SmallInt
-  nombre               String         @db.VarChar(255)
-  detalle              String?        @db.VarChar(255)
-  descripcion          String?
-  usos                 String?        @db.VarChar(100)
-  tipoHierro           String?        @map("tipo_hierro") @db.VarChar(20)
-  anchoMm              Int?           @map("ancho_mm")
-  largoMm              Int?           @map("largo_mm")
-  altoMm               Int?           @map("alto_mm")
-  anchoUtilMm          Int?           @map("ancho_util_mm")
-  largoUtilMm          Int?           @map("largo_util_mm")
-  diametroMm           Int?           @map("diametro_mm")
-  capacidad            Int?
-  imagenUrl            String?        @map("imagen_url") @db.VarChar(255)
-  pdfUrl               String?        @map("pdf_url") @db.VarChar(255)
-  dxfUrl               String?        @map("dxf_url") @db.VarChar(255)
-  precioLista          Decimal?       @map("precio_lista") @db.Decimal(14, 2)
-  moneda               String?        @db.Char(3)
-  valorMateriales      Decimal?       @map("valor_materiales") @db.Decimal(14, 2)
-  fechaValorMateriales DateTime?      @map("fecha_valor_materiales") @db.Date
-  creadoPor            BigInt?        @map("creado_por")
-  creadoEn             DateTime       @default(now()) @map("creado_en") @db.Timestamptz(6)
-  creador              Usuario?       @relation("MaquinaCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  tipoMaquina          TipoMaquina?   @relation(fields: [tipoMaquinaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  rubros               MaquinaRubro[]
-  ordenesTrabajo       OrdenTrabajo[]
+  id             BigInt         @id @default(autoincrement())
+  planoId        String         @unique @map("plano_id") @db.VarChar(30)
+  tipoMaquinaId  Int?           @map("tipo_maquina_id") @db.SmallInt
+  nombre         String         @db.VarChar(255)
+  detalle        String?        @db.VarChar(255)
+  descripcion    String?
+  usos           String?        @db.VarChar(100)
+  tipoHierro     String?        @map("tipo_hierro") @db.VarChar(20)
+  anchoMm        Int?           @map("ancho_mm")
+  largoMm        Int?           @map("largo_mm")
+  altoMm         Int?           @map("alto_mm")
+  anchoUtilMm    Int?           @map("ancho_util_mm")
+  largoUtilMm    Int?           @map("largo_util_mm")
+  diametroMm     Int?           @map("diametro_mm")
+  capacidad      Int?
+  imagenUrl      String?        @map("imagen_url") @db.VarChar(255)
+  pdfUrl         String?        @map("pdf_url") @db.VarChar(255)
+  dxfUrl         String?        @map("dxf_url") @db.VarChar(255)
+  creadoPor      BigInt?        @map("creado_por")
+  creadoEn       DateTime       @default(now()) @map("creado_en") @db.Timestamptz(6)
+  creador        Usuario?       @relation("MaquinaCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoMaquina    TipoMaquina?   @relation(fields: [tipoMaquinaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rubros         MaquinaRubro[]
+  ordenesTrabajo OrdenTrabajo[]
 
   @@index([planoId], map: "idx_maquinas_plano")
   @@map("maquinas")

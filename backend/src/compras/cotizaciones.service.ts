@@ -12,15 +12,15 @@ export class CotizacionesService {
     findAll(monedaId?: number) {
         return this.prisma.cotizacion.findMany({
             where: monedaId !== undefined ? { monedaId } : undefined,
-            include: { moneda: true },
+            include: { moneda: true, creador: { select: { id: true, username: true, nombre: true } } },
             orderBy: { fecha: 'desc' },
         });
     }
 
-    create(dto: CreateCotizacionDto) {
+    create(dto: CreateCotizacionDto, creadoPor: bigint) {
         return this.prisma.cotizacion.create({
-            data: { monedaId: dto.monedaId, tasaCambio: dto.tasaCambio, fuente: dto.fuente ?? 'MANUAL' },
-            include: { moneda: true },
+            data: { monedaId: dto.monedaId, tasaCambio: dto.tasaCambio, fuente: dto.fuente ?? 'MANUAL', creadoPor },
+            include: { moneda: true, creador: { select: { id: true, username: true, nombre: true } } },
         });
     }
 }

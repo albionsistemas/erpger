@@ -37,7 +37,11 @@ export class ArticulosService {
                     categoria: true,
                     subcategoria: true,
                     rubro: true,
-                    precios: { orderBy: { fecha: 'desc' }, take: 1 },
+                    precios: {
+                        orderBy: { fecha: 'desc' },
+                        take: 1,
+                        include: { creador: { select: { id: true, username: true, nombre: true } } },
+                    },
                 },
                 orderBy: { nombre: 'asc' },
                 skip: query.skip,
@@ -56,7 +60,10 @@ export class ArticulosService {
                 categoria: true,
                 subcategoria: true,
                 rubro: true,
-                precios: { orderBy: { fecha: 'desc' } },
+                precios: {
+                    orderBy: { fecha: 'desc' },
+                    include: { creador: { select: { id: true, username: true, nombre: true } } },
+                },
             },
         });
         if (!articulo) throw new NotFoundException(`Articulo ${id} no encontrado`);
@@ -87,13 +94,14 @@ export class ArticulosService {
         return this.prisma.articuloPrecio.findMany({
             where: { articuloId },
             orderBy: { fecha: 'desc' },
+            include: { creador: { select: { id: true, username: true, nombre: true } } },
         });
     }
 
-    async addPrecio(articuloId: bigint, dto: CreatePrecioDto) {
+    async addPrecio(articuloId: bigint, dto: CreatePrecioDto, creadoPor: bigint) {
         await this.findOne(articuloId);
         return this.prisma.articuloPrecio.create({
-            data: { articuloId, precioUsd: dto.precioUsd, motivo: dto.motivo },
+            data: { articuloId, precioUsd: dto.precioUsd, motivo: dto.motivo, creadoPor },
         });
     }
 

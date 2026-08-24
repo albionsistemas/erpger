@@ -13,6 +13,7 @@ interface Cotizacion {
   tasaCambio: string
   fecha: string
   fuente: string
+  creador: { username: string; nombre: string | null } | null
 }
 
 interface Moneda {
@@ -274,13 +275,14 @@ export function MonedasPage() {
               <TableRow>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Valor</TableHead>
+                <TableHead>Usuario</TableHead>
                 <TableHead>Fuente</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {historial.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Sin historial
                   </TableCell>
                 </TableRow>
@@ -289,6 +291,7 @@ export function MonedasPage() {
                 <TableRow key={c.id}>
                   <TableCell>{new Date(c.fecha).toLocaleString('es-AR')}</TableCell>
                   <TableCell>{Number(c.tasaCambio).toLocaleString('es-AR', { maximumFractionDigits: 4 })}</TableCell>
+                  <TableCell className="text-muted-foreground">{c.creador?.nombre ?? c.creador?.username ?? '-'}</TableCell>
                   <TableCell className="text-muted-foreground">{c.fuente}</TableCell>
                 </TableRow>
               ))}

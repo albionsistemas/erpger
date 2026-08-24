@@ -22,6 +22,8 @@ import { QueryArticuloDto } from './dto/query-articulo.dto';
 import { CreatePrecioDto } from './dto/create-precio.dto';
 import { ParseBigIntPipe } from '../common/pipes/parse-bigint.pipe';
 import { Permiso } from '../common/decorators/permiso.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtPayload } from '../auth/types';
 
 // Catalogo compartido entre modulos: el CRUD lo maneja Compras, pero
 // Ingenieria (y otros) necesitan poder listar/ver articulos para
@@ -68,8 +70,12 @@ export class ArticulosController {
 
     @Permiso('compras', 'EDITAR')
     @Post(':id/precios')
-    addPrecio(@Param('id', ParseBigIntPipe) id: bigint, @Body() dto: CreatePrecioDto) {
-        return this.articulos.addPrecio(id, dto);
+    addPrecio(
+        @Param('id', ParseBigIntPipe) id: bigint,
+        @Body() dto: CreatePrecioDto,
+        @CurrentUser() user: JwtPayload,
+    ) {
+        return this.articulos.addPrecio(id, dto, BigInt(user.sub));
     }
 
     @Permiso('compras', 'EDITAR')

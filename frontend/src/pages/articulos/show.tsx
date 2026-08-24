@@ -15,6 +15,7 @@ interface Precio {
   precioUsd: string
   fecha: string
   motivo: string | null
+  creador: { username: string; nombre: string | null } | null
 }
 
 interface ArticuloDetalle {
@@ -151,13 +152,14 @@ export function ArticulosShow() {
               <TableRow>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Costo USD</TableHead>
+                <TableHead>Usuario</TableHead>
                 <TableHead>Motivo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(!result.precios || result.precios.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Sin historial de costo
                   </TableCell>
                 </TableRow>
@@ -166,6 +168,7 @@ export function ArticulosShow() {
                 <TableRow key={p.id}>
                   <TableCell>{new Date(p.fecha).toLocaleString('es-AR')}</TableCell>
                   <TableCell>US$ {Number(p.precioUsd).toLocaleString('es-AR')}</TableCell>
+                  <TableCell className="text-muted-foreground">{p.creador?.nombre ?? p.creador?.username ?? '-'}</TableCell>
                   <TableCell className="text-muted-foreground">{p.motivo ?? '-'}</TableCell>
                 </TableRow>
               ))}
