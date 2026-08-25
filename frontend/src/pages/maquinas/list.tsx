@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTable, useGo, useDelete, type CrudFilter } from '@refinedev/core'
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2, Eye, ImageOff, FileText } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, ImageOff, FileText, Ruler } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ interface MaquinaRow {
   nombre: string
   imagenUrl: string | null
   pdfUrl: string | null
+  dxfUrl: string | null
 }
 
 const SIN_FILTRO = 'todos'
@@ -115,11 +116,18 @@ export function MaquinasList() {
                 <TableCell className="font-medium">{m.planoId}</TableCell>
                 <TableCell>{m.nombre}</TableCell>
                 <TableCell>
-                  {m.pdfUrl && (
-                    <a href={m.pdfUrl} target="_blank" rel="noreferrer" title="Ver PDF">
-                      <FileText className="h-5 w-5 text-red-600" />
-                    </a>
-                  )}
+                  <div className="flex gap-2">
+                    {m.pdfUrl && (
+                      <a href={m.pdfUrl} target="_blank" rel="noreferrer" title="Ver PDF">
+                        <FileText className="h-5 w-5 text-red-600" />
+                      </a>
+                    )}
+                    {m.dxfUrl && (
+                      <a href={m.dxfUrl} target="_blank" rel="noreferrer" title="Descargar DXF">
+                        <Ruler className="h-5 w-5 text-blue-600" />
+                      </a>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">

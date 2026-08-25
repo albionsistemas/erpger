@@ -1,6 +1,6 @@
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
-import { Pencil, ImageOff } from 'lucide-react'
+import { Pencil, ImageOff, FileText, Ruler } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -16,6 +16,8 @@ interface MaquinaDetalle {
   altoMm: number | null
   capacidad: number | null
   imagenUrl: string | null
+  pdfUrl: string | null
+  dxfUrl: string | null
   tipoMaquina: { nombre: string } | null
 }
 
@@ -83,6 +85,32 @@ export function MaquinasShow() {
               </div>
             )}
           </div>
+          {(result.pdfUrl || result.dxfUrl) && (
+            <div className="col-span-3 flex gap-6">
+              {result.pdfUrl && (
+                <a
+                  href={result.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:underline"
+                >
+                  <FileText className="h-4 w-4" />
+                  Ver PDF
+                </a>
+              )}
+              {result.dxfUrl && (
+                <a
+                  href={result.dxfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                >
+                  <Ruler className="h-4 w-4" />
+                  Descargar DXF
+                </a>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
