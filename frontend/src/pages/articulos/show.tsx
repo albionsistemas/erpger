@@ -3,7 +3,7 @@ import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
 import { Pencil, DollarSign, ImageOff, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
-import { esNuevo } from '@/lib/nuevo'
+import { esNuevo, esFechaDesconocida } from '@/lib/nuevo'
 import { imagenArticulo } from '@/lib/articulo-imagen'
 import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,7 @@ interface ArticuloDetalle {
   imagenUrl: string | null
   pdfUrl: string | null
   creadoEn: string
+  creador: { id: number; username: string; nombre: string | null } | null
   categoria: { nombre: string } | null
   subcategoria: { nombre: string; imagenUrl: string | null } | null
   rubro: { nombre: string } | null
@@ -123,6 +124,16 @@ export function ArticulosShow() {
           <div>
             <p className="text-muted-foreground">NC</p>
             <p className="font-medium">{result.nc ?? '-'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Fecha de alta</p>
+            <p className="font-medium">
+              {esFechaDesconocida(result.creadoEn) ? 'Sin fecha registrada' : new Date(result.creadoEn).toLocaleDateString('es-AR')}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Cargado por</p>
+            <p className="font-medium">{result.creador?.nombre ?? result.creador?.username ?? '-'}</p>
           </div>
           {result.denominacionComercial && (
             <div className="col-span-3">

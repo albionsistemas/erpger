@@ -60,6 +60,7 @@ export class ArticulosService {
                 categoria: true,
                 subcategoria: true,
                 rubro: true,
+                creador: { select: { id: true, username: true, nombre: true } },
                 precios: {
                     orderBy: { fecha: 'desc' },
                     include: { creador: { select: { id: true, username: true, nombre: true } } },
