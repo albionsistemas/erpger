@@ -10,13 +10,14 @@ interface ResourceModuloConfig {
 // Mapea cada resource de Refine al modulo de negocio que lo gatea.
 // Espejo de los @Permiso(...) del backend (ver backend/README.md,
 // seccion "Reparto de modulos"). Ingenieria = maquinas/BOM/tecnico;
-// Planificacion = OF/OT (cuando y quien las ejecuta). Operarios/Articulos
-// son catalogos con lectura abierta pero CRUD de otro modulo (RRHH y
-// Compras respectivamente) -- Ingenieria los necesita para elegir un
-// operario/articulo al armar el despiece, sin poder darlos de alta.
+// Planificacion = OF/OT (cuando y quien las ejecuta). Operarios/Articulos/
+// despiece-maquinas son catalogos con lectura abierta pero CRUD de otro
+// modulo dueno (RRHH, Compras, Ingenieria respectivamente) -- por ejemplo
+// Compras solo consulta el despiece de maquinas para saber que comprar,
+// no lo edita.
 const RESOURCE_MODULO: Record<string, ResourceModuloConfig> = {
   maquinas: { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
-  'despiece-maquinas': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
+  'despiece-maquinas': { writeModulo: 'ingenieria' },
   'despiece-ensambles': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
   'despiece-ot': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },
   'ot-cambios': { readModulo: 'ingenieria', writeModulo: 'ingenieria' },

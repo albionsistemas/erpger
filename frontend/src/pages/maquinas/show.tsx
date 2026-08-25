@@ -1,6 +1,6 @@
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
-import { Pencil, ImageOff, FileText, Ruler } from 'lucide-react'
+import { Pencil, ImageOff, FileText, Ruler, ListTree } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -32,12 +32,20 @@ export function MaquinasShow() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{result.nombre}</h1>
-        <Button asChild variant="outline">
-          <Link to={`/maquinas/${result.id}/editar`}>
-            <Pencil />
-            Editar
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to={`/maquinas/${result.id}/despiece`}>
+              <ListTree />
+              Ver despiece
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to={`/maquinas/${result.id}/editar`}>
+              <Pencil />
+              Editar
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

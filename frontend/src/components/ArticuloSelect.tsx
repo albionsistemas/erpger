@@ -10,6 +10,7 @@ interface ArticuloOption {
   id: number
   nombre: string
   codigoAlbion: string | null
+  largoComercial?: number | null
 }
 
 interface ArticuloSelectProps {

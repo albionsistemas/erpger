@@ -10,18 +10,24 @@ export class DespieceMaquinasService {
     constructor(private readonly prisma: PrismaService) {}
 
     async findAll(query: QueryDespieceDto) {
+        // "plano" filtra el despiece de UNA maquina puntual (match
+        // exacto contra maquinas.plano_id, no busqueda parcial -- ids
+        // como "502" y "502_21" son maquinas distintas). Cuando viene
+        // seteado se trae la lista completa sin paginar: es la pantalla
+        // de despiece de una maquina, no un listado general, y el
+        // filtrado/agrupado por COD se hace en el cliente.
         const where: Prisma.DespieceMaquinaWhereInput = {
-            ...(query.plano ? { plano: { contains: query.plano, mode: 'insensitive' } } : {}),
+            ...(query.plano ? { plano: query.plano } : {}),
             ...(query.articuloId !== undefined ? { articuloId: BigInt(query.articuloId) } : {}),
         };
+        const sinPaginar = !!query.plano;
 
         const [data, total] = await Promise.all([
             this.prisma.despieceMaquina.findMany({
                 where,
                 include: { articulo: true },
                 orderBy: [{ plano: 'asc' }, { item: 'asc' }],
-                skip: query.skip,
-                take: query.limit,
+                ...(sinPaginar ? {} : { skip: query.skip, take: query.limit }),
             }),
             this.prisma.despieceMaquina.count({ where }),
         ]);
@@ -35,10 +41,10 @@ export class DespieceMaquinasService {
         return item;
     }
 
-    create(dto: CreateDespieceMaquinaDto) {
+    create(dto: CreateDespieceMaquinaDto, creadoPor: bigint) {
         const { articuloId, ...rest } = dto;
         return this.prisma.despieceMaquina.create({
-            data: { ...rest, articuloId: articuloId !== undefined ? BigInt(articuloId) : undefined },
+            data: { ...rest, articuloId: articuloId !== undefined ? BigInt(articuloId) : undefined, creadoPor },
         });
     }
 
@@ -54,5 +60,13 @@ export class DespieceMaquinasService {
     async remove(id: bigint) {
         await this.findOne(id);
         await this.prisma.despieceMaquina.delete({ where: { id } });
+    }
+
+    // Reemplaza el "Borrar todos los items" del legacy, que estaba
+    // restringido a 2 usuarios hardcodeados por nombre en vez de por
+    // permiso de modulo.
+    async removeByPlano(plano: string) {
+        const { count } = await this.prisma.despieceMaquina.deleteMany({ where: { plano } });
+        return { eliminados: count };
     }
 }

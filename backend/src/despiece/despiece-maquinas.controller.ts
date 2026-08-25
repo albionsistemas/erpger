@@ -5,8 +5,13 @@ import { UpdateDespieceMaquinaDto } from './dto/update-despiece-maquina.dto';
 import { QueryDespieceDto } from './dto/query-despiece.dto';
 import { ParseBigIntPipe } from '../common/pipes/parse-bigint.pipe';
 import { Permiso } from '../common/decorators/permiso.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtPayload } from '../auth/types';
 
-@Permiso('ingenieria', 'VER')
+// Catalogo de Ingenieria: Compras (y otros modulos) solo consultan el
+// despiece de maquinas para saber que comprar, no lo editan. Mismo
+// patron que Articulos/Operarios: lectura abierta a cualquier usuario
+// logueado, escritura gateada al modulo dueno.
 @Controller('despiece-maquinas')
 export class DespieceMaquinasController {
     constructor(private readonly despiece: DespieceMaquinasService) {}
@@ -23,8 +28,8 @@ export class DespieceMaquinasController {
 
     @Permiso('ingenieria', 'EDITAR')
     @Post()
-    create(@Body() dto: CreateDespieceMaquinaDto) {
-        return this.despiece.create(dto);
+    create(@Body() dto: CreateDespieceMaquinaDto, @CurrentUser() user: JwtPayload) {
+        return this.despiece.create(dto, BigInt(user.sub));
     }
 
     @Permiso('ingenieria', 'EDITAR')
@@ -38,5 +43,11 @@ export class DespieceMaquinasController {
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', ParseBigIntPipe) id: bigint) {
         return this.despiece.remove(id);
+    }
+
+    @Permiso('ingenieria', 'EDITAR')
+    @Delete('plano/:plano')
+    removeByPlano(@Param('plano') plano: string) {
+        return this.despiece.removeByPlano(plano);
     }
 }

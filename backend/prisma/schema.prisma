@@ -206,6 +206,7 @@ model Articulo {
   modoVenta             ModoVenta?         @map("modo_venta")
   imagenUrl             String?            @map("imagen_url") @db.VarChar(255)
   pdfUrl                String?            @map("pdf_url") @db.VarChar(255)
+  largoComercial        Int?               @map("largo_comercial")
   precios               ArticuloPrecio[]
   categoria             Categoria?         @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   creador               Usuario?           @relation("ArticuloCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -402,6 +403,7 @@ model DespieceMaquina {
   piezaCodigo         String?   @map("pieza_codigo") @db.VarChar(20)
   denominacion        String?   @db.VarChar(130)
   articuloId          BigInt?   @map("articulo_id")
+  articuloTexto       String?   @map("articulo_texto") @db.VarChar(255)
   anchoMm             Int?      @map("ancho_mm")
   largoMm             Int?      @map("largo_mm")
   cantidad            Int

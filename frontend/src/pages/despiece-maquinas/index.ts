@@ -1,0 +1,1 @@
+export { DespieceMaquinaPage } from './DespieceMaquinaPage'
