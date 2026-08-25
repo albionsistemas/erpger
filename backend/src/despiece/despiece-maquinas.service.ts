@@ -74,12 +74,18 @@ export class DespieceMaquinasService {
     // nada de precio/costo, eso es de Compras). Agrupa por plano (texto
     // libre, sin FK a maquinas) en JS en vez de con GROUP BY en SQL
     // porque necesitamos ademas la fecha y el usuario de la PRIMERA vez
-    // que se cargo esa pieza en cada maquina, no solo el conteo.
+    // que se cargo esa pieza en cada maquina, no solo el total.
+    //
+    // "cantidadPiezas" es la SUMA del campo cantidad de todas las
+    // lineas de esa maquina que usan el articulo (cuantas unidades se
+    // necesitan en total), no la cantidad de lineas -- una sola linea
+    // con cantidad=4 cuenta como 4, no como 1.
     async usoEnMaquinas(articuloId: bigint) {
         const filas = await this.prisma.despieceMaquina.findMany({
             where: { articuloId },
             select: {
                 plano: true,
+                cantidad: true,
                 creadoEn: true,
                 creador: { select: { id: true, username: true, nombre: true } },
             },
@@ -94,9 +100,9 @@ export class DespieceMaquinasService {
             if (!f.plano) continue;
             const existente = porPlano.get(f.plano);
             if (existente) {
-                existente.cantidadPiezas++;
+                existente.cantidadPiezas += f.cantidad;
             } else {
-                porPlano.set(f.plano, { fechaAlta: f.creadoEn, usuario: f.creador, cantidadPiezas: 1 });
+                porPlano.set(f.plano, { fechaAlta: f.creadoEn, usuario: f.creador, cantidadPiezas: f.cantidad });
             }
         }
 
