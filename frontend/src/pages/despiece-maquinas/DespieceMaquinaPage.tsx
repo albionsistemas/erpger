@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Plus, Trash2, ArrowLeft, ImageOff, Printer } from 'lucide-react'
+import { Plus, ArrowLeft, ImageOff, Printer } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { ArticuloSelect } from '@/components/ArticuloSelect'
 import { TIPOS_CORTE } from '@/lib/despiece-cod'
@@ -173,13 +173,6 @@ export function DespieceMaquinaPage() {
     await cargarLineas(maquina.planoId)
   }
 
-  const eliminarTodos = async () => {
-    if (!maquina) return
-    if (!confirm(`Eliminar TODAS las lineas de despiece de "${maquina.nombre}"? Esta accion no se puede deshacer.`)) return
-    await apiClient.delete(`/despiece-maquinas/plano/${maquina.planoId}`)
-    await cargarLineas(maquina.planoId)
-  }
-
   const corte = useMemo(
     () => ({
       materiales: cortesDeMateriales(lineas),
@@ -251,10 +244,6 @@ export function DespieceMaquinaPage() {
           <h1 className="text-xl font-semibold">{maquina.nombre}</h1>
           <p className="text-sm text-muted-foreground">Plano {maquina.planoId} — Despiece</p>
         </div>
-        <Button variant="outline" className="text-destructive" onClick={eliminarTodos}>
-          <Trash2 className="h-4 w-4" />
-          Borrar todas
-        </Button>
         <Button onClick={abrirNuevo}>
           <Plus />
           Agregar linea
