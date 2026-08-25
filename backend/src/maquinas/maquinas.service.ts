@@ -33,7 +33,20 @@ export class MaquinasService {
             this.prisma.maquina.count({ where }),
         ]);
 
-        return { data, total, page: query.page, limit: query.limit };
+        // despiece_maquinas.plano no tiene FK a maquinas (es texto
+        // libre, ver 001_ingenieria_schema.sql), asi que la cuenta de
+        // "Partes" se resuelve por valor en vez de con una relacion de
+        // Prisma -- solo para las maquinas de la pagina actual.
+        const planoIds = data.map((m) => m.planoId);
+        const counts = await this.prisma.despieceMaquina.groupBy({
+            by: ['plano'],
+            where: { plano: { in: planoIds } },
+            _count: { _all: true },
+        });
+        const countMap = new Map(counts.map((c) => [c.plano, c._count._all]));
+        const dataConPartes = data.map((m) => ({ ...m, partesCount: countMap.get(m.planoId) ?? 0 }));
+
+        return { data: dataConPartes, total, page: query.page, limit: query.limit };
     }
 
     async findOne(id: bigint) {

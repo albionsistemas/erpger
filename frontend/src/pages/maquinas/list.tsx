@@ -16,6 +16,7 @@ interface MaquinaRow {
   imagenUrl: string | null
   pdfUrl: string | null
   dxfUrl: string | null
+  partesCount: number
 }
 
 const SIN_FILTRO = 'todos'
@@ -83,6 +84,7 @@ export function MaquinasList() {
               <TableHead>Imagen</TableHead>
               <TableHead>Plano</TableHead>
               <TableHead>Nombre</TableHead>
+              <TableHead>Partes</TableHead>
               <TableHead>Recursos</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -90,14 +92,14 @@ export function MaquinasList() {
           <TableBody>
             {tableQuery.isLoading && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   Cargando...
                 </TableCell>
               </TableRow>
             )}
             {!tableQuery.isLoading && result.data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   Sin resultados
                 </TableCell>
               </TableRow>
@@ -114,7 +116,12 @@ export function MaquinasList() {
                   )}
                 </TableCell>
                 <TableCell className="font-medium">{m.planoId}</TableCell>
-                <TableCell>{m.nombre}</TableCell>
+                <TableCell>
+                  <Link to={`/maquinas/${m.id}/despiece`} className="text-primary hover:underline">
+                    {m.nombre}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">{m.partesCount || '-'}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     {m.pdfUrl && (
