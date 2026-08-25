@@ -14,13 +14,18 @@ function Codigo({ l }: { l: DespieceLinea }) {
   )
 }
 
-function ArticuloCelda({ l }: { l: DespieceLinea }) {
-  return l.articulo ? (
-    <Link to={`/articulos/${l.articulo.id}`} className="text-primary hover:underline">
-      {l.articulo.nombre}
-    </Link>
-  ) : (
-    <span>{l.articuloTexto || '-'}</span>
+function ArticuloCelda({ l, mostrarDenominacion }: { l: DespieceLinea; mostrarDenominacion?: boolean }) {
+  return (
+    <div className="flex flex-col">
+      {l.articulo ? (
+        <Link to={`/articulos/${l.articulo.id}`} className="text-primary hover:underline">
+          {l.articulo.nombre}
+        </Link>
+      ) : (
+        <span>{l.articuloTexto || '-'}</span>
+      )}
+      {mostrarDenominacion && l.denominacion && <span className="text-xs text-muted-foreground">{l.denominacion}</span>}
+    </div>
   )
 }
 
@@ -59,9 +64,19 @@ interface DetailTableProps {
   acciones?: 'full' | 'editar' | 'ninguna'
   onEditar?: (l: DespieceLinea) => void
   onEliminar?: (l: DespieceLinea) => void
+  denominacionEnArticulo?: boolean
 }
 
-export function DetailTable({ titulo, subtitulo, lineas, columnas, acciones = 'ninguna', onEditar, onEliminar }: DetailTableProps) {
+export function DetailTable({
+  titulo,
+  subtitulo,
+  lineas,
+  columnas,
+  acciones = 'ninguna',
+  onEditar,
+  onEliminar,
+  denominacionEnArticulo,
+}: DetailTableProps) {
   const cols = columnas.length + (acciones !== 'ninguna' ? 1 : 0)
   return (
     <div className="flex flex-col gap-2">
@@ -88,11 +103,22 @@ export function DetailTable({ titulo, subtitulo, lineas, columnas, acciones = 'n
             {lineas.map((l) => (
               <TableRow key={l.id}>
                 {columnas.map((c) => (
-                  <TableCell key={c} className={c === 'articulo' || c === 'denominacion' ? 'max-w-56 truncate' : undefined}>
+                  <TableCell
+                    key={c}
+                    className={
+                      c === 'articulo'
+                        ? denominacionEnArticulo
+                          ? 'max-w-56'
+                          : 'max-w-56 truncate'
+                        : c === 'denominacion'
+                          ? 'max-w-56 truncate'
+                          : undefined
+                    }
+                  >
                     {c === 'item' && l.item}
                     {c === 'codigo' && <Codigo l={l} />}
                     {c === 'pl' && (l.piezaCodigo ?? '-')}
-                    {c === 'articulo' && <ArticuloCelda l={l} />}
+                    {c === 'articulo' && <ArticuloCelda l={l} mostrarDenominacion={denominacionEnArticulo} />}
                     {c === 'denominacion' && (l.denominacion ?? '-')}
                     {c === 'ancho' && (l.anchoMm ?? '-')}
                     {c === 'largo' && (l.largoMm ?? '-')}
