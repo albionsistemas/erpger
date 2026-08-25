@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, Patch, Post, Query, Res, StreamableFile } from '@nestjs/common';
+import type { Response } from 'express';
 import { DespieceMaquinasService } from './despiece-maquinas.service';
+import { DespiecePdfService } from './pdf/despiece-pdf.service';
 import { CreateDespieceMaquinaDto } from './dto/create-despiece-maquina.dto';
 import { UpdateDespieceMaquinaDto } from './dto/update-despiece-maquina.dto';
 import { QueryDespieceDto } from './dto/query-despiece.dto';
@@ -14,7 +16,10 @@ import { JwtPayload } from '../auth/types';
 // logueado, escritura gateada al modulo dueno.
 @Controller('despiece-maquinas')
 export class DespieceMaquinasController {
-    constructor(private readonly despiece: DespieceMaquinasService) {}
+    constructor(
+        private readonly despiece: DespieceMaquinasService,
+        private readonly despiecePdf: DespiecePdfService,
+    ) {}
 
     @Get()
     findAll(@Query() query: QueryDespieceDto) {
@@ -31,6 +36,45 @@ export class DespieceMaquinasController {
     @Get('uso-articulo/:articuloId')
     usoEnMaquinas(@Param('articuloId', ParseBigIntPipe) articuloId: bigint) {
         return this.despiece.usoEnMaquinas(articuloId);
+    }
+
+    // PDF de impresion por pestana, equivalentes a los botones rojos del
+    // legacy (imprimir_lista_general.php / _cortes.php / _compras.php /
+    // _pantografo.php / _chapas.php). Lectura abierta, igual que el resto
+    // del modulo -- son solo listados, no modifican nada.
+    @Get('pdf/general/:plano')
+    @Header('Content-Type', 'application/pdf')
+    async pdfGeneral(@Param('plano') plano: string, @Res({ passthrough: true }) res: Response) {
+        return this.enviarPdf(res, plano, 'general', await this.despiecePdf.general(plano));
+    }
+
+    @Get('pdf/corte/:plano')
+    @Header('Content-Type', 'application/pdf')
+    async pdfCorte(@Param('plano') plano: string, @Res({ passthrough: true }) res: Response) {
+        return this.enviarPdf(res, plano, 'corte', await this.despiecePdf.corte(plano));
+    }
+
+    @Get('pdf/compras/:plano')
+    @Header('Content-Type', 'application/pdf')
+    async pdfCompras(@Param('plano') plano: string, @Res({ passthrough: true }) res: Response) {
+        return this.enviarPdf(res, plano, 'compras', await this.despiecePdf.compras(plano));
+    }
+
+    @Get('pdf/pantografo/:plano')
+    @Header('Content-Type', 'application/pdf')
+    async pdfPantografo(@Param('plano') plano: string, @Res({ passthrough: true }) res: Response) {
+        return this.enviarPdf(res, plano, 'pantografo', await this.despiecePdf.pantografo(plano));
+    }
+
+    @Get('pdf/chapas/:plano')
+    @Header('Content-Type', 'application/pdf')
+    async pdfChapas(@Param('plano') plano: string, @Res({ passthrough: true }) res: Response) {
+        return this.enviarPdf(res, plano, 'chapas', await this.despiecePdf.chapas(plano));
+    }
+
+    private enviarPdf(res: Response, plano: string, tipo: string, buffer: Buffer): StreamableFile {
+        res.set({ 'Content-Disposition': `inline; filename="${tipo}-${plano}.pdf"` });
+        return new StreamableFile(buffer);
     }
 
     @Permiso('ingenieria', 'EDITAR')

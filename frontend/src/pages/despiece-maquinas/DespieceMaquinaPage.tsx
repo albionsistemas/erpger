@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Plus, Trash2, ArrowLeft, ImageOff } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, ImageOff, Printer } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { ArticuloSelect } from '@/components/ArticuloSelect'
 import { TIPOS_CORTE } from '@/lib/despiece-cod'
@@ -212,6 +212,30 @@ export function DespieceMaquinaPage() {
 
   const lineasPantografo = useMemo(() => pantografo(lineas), [lineas])
 
+  const [imprimiendo, setImprimiendo] = useState<string | null>(null)
+  const imprimir = async (tipo: 'general' | 'corte' | 'compras' | 'pantografo' | 'chapas') => {
+    if (!maquina) return
+    setImprimiendo(tipo)
+    try {
+      const res = await apiClient.get(`/despiece-maquinas/pdf/${tipo}/${encodeURIComponent(maquina.planoId)}`, {
+        responseType: 'blob',
+      })
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+      window.open(url, '_blank')
+    } finally {
+      setImprimiendo(null)
+    }
+  }
+
+  const BotonImprimir = ({ tipo, texto = 'Imprimir' }: { tipo: Parameters<typeof imprimir>[0]; texto?: string }) => (
+    <div className="flex justify-end">
+      <Button variant="destructive" size="sm" disabled={imprimiendo === tipo} onClick={() => imprimir(tipo)}>
+        <Printer className="h-4 w-4" />
+        {imprimiendo === tipo ? 'Generando...' : texto}
+      </Button>
+    </div>
+  )
+
   if (!maquina) return <p className="text-muted-foreground">Cargando...</p>
 
   return (
@@ -255,7 +279,8 @@ export function DespieceMaquinaPage() {
             <TabsTrigger value="chapas">Chapas</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general">
+          <TabsContent value="general" className="flex flex-col gap-3">
+            <BotonImprimir tipo="general" texto="Imprimir (sin fotos)" />
             <DetailTable
               lineas={lineas}
               columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte']}
@@ -267,6 +292,7 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="corte" className="flex flex-col gap-6">
+            <BotonImprimir tipo="corte" />
             <DetailTable
               titulo="Cortes de materiales"
               subtitulo="Se filtra las cadenas 'delrin', 'delree', 'poliprolipeno', 'varilla', 'bronce', 'chapa' y 'nylon'"
@@ -296,6 +322,7 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="compras" className="flex flex-col gap-6">
+            <BotonImprimir tipo="compras" />
             <GroupTable titulo="Compra en comerciales" subtitulo="Agrupado por articulo, sumando cantidades" grupos={compras.comerciales} />
             <GroupTable titulo="Piezas comunes" grupos={compras.piezasComunes} mostrarNota />
             <DetailTable
@@ -316,7 +343,8 @@ export function DespieceMaquinaPage() {
             />
           </TabsContent>
 
-          <TabsContent value="pantografo">
+          <TabsContent value="pantografo" className="flex flex-col gap-3">
+            <BotonImprimir tipo="pantografo" />
             <DetailTable
               lineas={lineasPantografo}
               columnas={['pl', 'denominacion', 'articulo', 'ancho', 'largo', 'cant', 'obs', 'codigo']}
@@ -326,6 +354,7 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="chapas" className="flex flex-col gap-6">
+            <BotonImprimir tipo="chapas" />
             <DetailTable
               titulo="Chapas"
               lineas={chapas.detalle}
