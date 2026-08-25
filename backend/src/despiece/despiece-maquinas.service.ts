@@ -121,6 +121,8 @@ export class DespieceMaquinasService {
                     maquinaId: maquina.id,
                     maquinaNombre: maquina.nombre,
                     planoId: maquina.planoId,
+                    imagenUrl: maquina.imagenUrl,
+                    maquinaCreadaEn: maquina.creadoEn,
                     tipoMaquina: maquina.tipoMaquina?.nombre ?? null,
                     fechaAlta: info.fechaAlta,
                     usuario: info.usuario,

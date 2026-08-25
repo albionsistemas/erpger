@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Wrench } from 'lucide-react'
+import { ArrowLeft, Wrench, ImageOff } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -9,12 +11,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 interface Articulo {
   id: number
   nombre: string
+  creadoEn: string
 }
 
 interface UsoMaquina {
   maquinaId: number
   maquinaNombre: string
   planoId: string
+  imagenUrl: string | null
+  maquinaCreadaEn: string
   tipoMaquina: string | null
   fechaAlta: string
   usuario: { id: number; username: string; nombre: string | null } | null
@@ -50,7 +55,10 @@ export function ArticuloUsoPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-xl font-semibold">{articulo.nombre}</h1>
+          <h1 className="text-xl font-semibold">
+            {articulo.nombre}
+            {esNuevo(articulo.creadoEn) && <NewBadge />}
+          </h1>
           <p className="text-sm text-muted-foreground">Codigo {articulo.id} — Maquinas que usan este articulo</p>
         </div>
       </div>
@@ -59,6 +67,7 @@ export function ArticuloUsoPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Imagen</TableHead>
               <TableHead>Maquina</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Fecha de alta</TableHead>
@@ -69,7 +78,7 @@ export function ArticuloUsoPage() {
           <TableBody>
             {usos.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   Este articulo no esta vinculado al despiece de ninguna maquina
                 </TableCell>
               </TableRow>
@@ -77,9 +86,19 @@ export function ArticuloUsoPage() {
             {usos.map((u) => (
               <TableRow key={u.maquinaId}>
                 <TableCell>
+                  {u.imagenUrl ? (
+                    <img src={u.imagenUrl} alt={u.maquinaNombre} className="h-10 w-10 rounded object-cover border" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded border border-dashed text-muted-foreground">
+                      <ImageOff className="h-4 w-4" />
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
                   <Link to={`/maquinas/${u.maquinaId}/despiece`} className="flex items-center gap-1.5 text-primary hover:underline">
                     <Wrench className="h-3.5 w-3.5" />
                     {u.maquinaNombre}
+                    {esNuevo(u.maquinaCreadaEn) && <NewBadge />}
                   </Link>
                   <span className="text-xs text-muted-foreground">Plano {u.planoId}</span>
                 </TableCell>

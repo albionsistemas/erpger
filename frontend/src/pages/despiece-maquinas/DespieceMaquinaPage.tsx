@@ -258,7 +258,7 @@ export function DespieceMaquinaPage() {
           <TabsContent value="general">
             <DetailTable
               lineas={lineas}
-              columnas={['item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte', 'nota']}
+              columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte', 'nota']}
               acciones="full"
               onEditar={abrirEditar}
               onEliminar={eliminar}

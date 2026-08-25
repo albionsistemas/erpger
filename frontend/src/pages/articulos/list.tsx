@@ -3,6 +3,8 @@ import { useTable, useGo, useDelete, type CrudFilter } from '@refinedev/core'
 import { Link } from 'react-router-dom'
 import { Plus, Pencil, Trash2, Eye, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -19,6 +21,7 @@ interface ArticuloRow {
   nombre: string
   pdfUrl: string | null
   precios: { precioUsd: string }[]
+  creadoEn: string
 }
 
 const SIN_FILTRO = 'todas'
@@ -108,7 +111,10 @@ export function ArticulosList() {
             {result.data.map((a) => (
               <TableRow key={a.id}>
                 <TableCell className="text-muted-foreground">{a.id}</TableCell>
-                <TableCell className="font-medium">{a.nombre}</TableCell>
+                <TableCell className="font-medium">
+                  {a.nombre}
+                  {esNuevo(a.creadoEn) && <NewBadge />}
+                </TableCell>
                 <TableCell>{a.precios?.[0] ? `US$ ${Number(a.precios[0].precioUsd).toLocaleString('es-AR')}` : '-'}</TableCell>
                 <TableCell>
                   {a.pdfUrl && (

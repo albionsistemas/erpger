@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, ImageOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { labelTipoCorte } from '@/lib/despiece-cod'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { calcularCompra, type DespieceLinea, type Grupo } from './despiece-helpers'
+
+function ImagenCelda({ l }: { l: DespieceLinea }) {
+  return l.articulo?.imagenUrl ? (
+    <img src={l.articulo.imagenUrl} alt={l.articulo.nombre} className="h-9 w-9 rounded object-cover border" />
+  ) : (
+    <div className="flex h-9 w-9 items-center justify-center rounded border border-dashed text-muted-foreground">
+      <ImageOff className="h-3.5 w-3.5" />
+    </div>
+  )
+}
 
 function Codigo({ l }: { l: DespieceLinea }) {
   return l.articuloId ? (
@@ -18,9 +30,12 @@ function ArticuloCelda({ l, mostrarDenominacion }: { l: DespieceLinea; mostrarDe
   return (
     <div className="flex flex-col">
       {l.articulo ? (
-        <Link to={`/articulos/${l.articulo.id}/uso-en-maquinas`} className="text-primary hover:underline">
-          {l.articulo.nombre}
-        </Link>
+        <span>
+          <Link to={`/articulos/${l.articulo.id}/uso-en-maquinas`} className="text-primary hover:underline">
+            {l.articulo.nombre}
+          </Link>
+          {esNuevo(l.articulo.creadoEn) && <NewBadge />}
+        </span>
       ) : (
         <span>{l.articuloTexto || '-'}</span>
       )}
@@ -30,6 +45,7 @@ function ArticuloCelda({ l, mostrarDenominacion }: { l: DespieceLinea; mostrarDe
 }
 
 export type ColDetalle =
+  | 'imagen'
   | 'item'
   | 'codigo'
   | 'pl'
@@ -43,6 +59,7 @@ export type ColDetalle =
   | 'obs'
 
 const HEADS: Record<ColDetalle, string> = {
+  imagen: 'Imagen',
   item: 'Item',
   codigo: 'Codigo',
   pl: 'PL',
@@ -115,6 +132,7 @@ export function DetailTable({
                           : undefined
                     }
                   >
+                    {c === 'imagen' && <ImagenCelda l={l} />}
                     {c === 'item' && l.item}
                     {c === 'codigo' && <Codigo l={l} />}
                     {c === 'pl' && (l.piezaCodigo ?? '-')}

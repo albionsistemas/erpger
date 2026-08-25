@@ -1,6 +1,8 @@
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
 import { Pencil, ImageOff, FileText, Ruler, ListTree } from 'lucide-react'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
@@ -18,6 +20,7 @@ interface MaquinaDetalle {
   imagenUrl: string | null
   pdfUrl: string | null
   dxfUrl: string | null
+  creadoEn: string
   tipoMaquina: { nombre: string } | null
 }
 
@@ -31,7 +34,10 @@ export function MaquinasShow() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{result.nombre}</h1>
+        <h1 className="text-xl font-semibold">
+          {result.nombre}
+          {esNuevo(result.creadoEn) && <NewBadge />}
+        </h1>
         <div className="flex gap-2">
           <Button asChild variant="outline">
             <Link to={`/maquinas/${result.id}/despiece`}>

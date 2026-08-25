@@ -3,6 +3,8 @@ import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
 import { Pencil, DollarSign, ImageOff, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -28,6 +30,7 @@ interface ArticuloDetalle {
   descripcion: string | null
   imagenUrl: string | null
   pdfUrl: string | null
+  creadoEn: string
   categoria: { nombre: string } | null
   subcategoria: { nombre: string } | null
   rubro: { nombre: string } | null
@@ -74,6 +77,7 @@ export function ArticulosShow() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">
           {result.nombre} <span className="text-base font-normal text-muted-foreground">Codigo {result.id}</span>
+          {esNuevo(result.creadoEn) && <NewBadge />}
         </h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setDialogOpen(true)}>

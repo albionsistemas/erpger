@@ -3,6 +3,8 @@ import { useTable, useGo, useDelete, type CrudFilter } from '@refinedev/core'
 import { Link } from 'react-router-dom'
 import { Plus, Pencil, Trash2, Eye, ImageOff, FileText, Ruler } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
+import { esNuevo } from '@/lib/nuevo'
+import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -17,6 +19,7 @@ interface MaquinaRow {
   pdfUrl: string | null
   dxfUrl: string | null
   partesCount: number
+  creadoEn: string
 }
 
 const SIN_FILTRO = 'todos'
@@ -120,6 +123,7 @@ export function MaquinasList() {
                   <Link to={`/maquinas/${m.id}/despiece`} className="text-primary hover:underline">
                     {m.nombre}
                   </Link>
+                  {esNuevo(m.creadoEn) && <NewBadge />}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{m.partesCount || '-'}</TableCell>
                 <TableCell>
