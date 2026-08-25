@@ -1,7 +1,7 @@
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
 import { Pencil, ImageOff, FileText, Ruler, ListTree } from 'lucide-react'
-import { esNuevo } from '@/lib/nuevo'
+import { esNuevo, esFechaDesconocida } from '@/lib/nuevo'
 import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -17,10 +17,12 @@ interface MaquinaDetalle {
   largoMm: number | null
   altoMm: number | null
   capacidad: number | null
+  tipoHierro: string | null
   imagenUrl: string | null
   pdfUrl: string | null
   dxfUrl: string | null
   creadoEn: string
+  creador: { id: number; username: string; nombre: string | null } | null
   tipoMaquina: { nombre: string } | null
 }
 
@@ -81,6 +83,20 @@ export function MaquinasShow() {
           <div>
             <p className="text-muted-foreground">Usos</p>
             <p className="font-medium">{result.usos ?? '-'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Tipo de hierro</p>
+            <p className="font-medium">{result.tipoHierro ?? '-'}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Fecha de alta</p>
+            <p className="font-medium">
+              {esFechaDesconocida(result.creadoEn) ? 'Sin fecha registrada' : new Date(result.creadoEn).toLocaleDateString('es-AR')}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Cargada por</p>
+            <p className="font-medium">{result.creador?.nombre ?? result.creador?.username ?? '-'}</p>
           </div>
           {result.descripcion && (
             <div className="col-span-3">

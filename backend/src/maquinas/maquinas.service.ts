@@ -52,7 +52,11 @@ export class MaquinasService {
     async findOne(id: bigint) {
         const maquina = await this.prisma.maquina.findUnique({
             where: { id },
-            include: { tipoMaquina: true, rubros: { include: { rubro: true } } },
+            include: {
+                tipoMaquina: true,
+                rubros: { include: { rubro: true } },
+                creador: { select: { id: true, username: true, nombre: true } },
+            },
         });
         if (!maquina) throw new NotFoundException(`Maquina ${id} no encontrada`);
         return maquina;
