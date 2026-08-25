@@ -7,7 +7,19 @@ import { labelTipoCorte } from '@/lib/despiece-cod'
 import { esNuevo } from '@/lib/nuevo'
 import { imagenArticulo } from '@/lib/articulo-imagen'
 import { NewBadge } from '@/components/NewBadge'
-import { calcularCompra, type DespieceLinea, type Grupo } from './despiece-helpers'
+import { calcularCompra, categoriaResaltada, type DespieceLinea, type Grupo } from './despiece-helpers'
+
+const COLOR_CATEGORIA: Record<NonNullable<ReturnType<typeof categoriaResaltada>>, string> = {
+  comercial: 'text-blue-600',
+  mecanizado: 'text-orange-600',
+  'pieza-comun': 'text-purple-600',
+  chapa: 'text-teal-600',
+}
+
+function colorArticulo(l: DespieceLinea): string {
+  const cat = categoriaResaltada(l)
+  return cat ? COLOR_CATEGORIA[cat] : 'text-primary'
+}
 
 function ImagenCelda({ l }: { l: DespieceLinea }) {
   const src = l.articulo ? imagenArticulo(l.articulo) : null
@@ -29,17 +41,18 @@ function Codigo({ l }: { l: DespieceLinea }) {
 }
 
 function ArticuloCelda({ l, mostrarDenominacion }: { l: DespieceLinea; mostrarDenominacion?: boolean }) {
+  const color = colorArticulo(l)
   return (
     <div className="flex flex-col">
       {l.articulo ? (
         <span>
-          <Link to={`/articulos/${l.articulo.id}/uso-en-maquinas`} className="text-primary hover:underline">
+          <Link to={`/articulos/${l.articulo.id}/uso-en-maquinas`} className={`${color} hover:underline`}>
             {l.articulo.nombre}
           </Link>
           {esNuevo(l.articulo.creadoEn) && <NewBadge />}
         </span>
       ) : (
-        <span>{l.articuloTexto || '-'}</span>
+        <span className={color !== 'text-primary' ? `font-medium ${color}` : undefined}>{l.articuloTexto || '-'}</span>
       )}
       {mostrarDenominacion && l.denominacion && <span className="text-xs text-muted-foreground">{l.denominacion}</span>}
     </div>
@@ -70,7 +83,7 @@ const HEADS: Record<ColDetalle, string> = {
   ancho: 'Ancho',
   largo: 'Largo',
   cant: 'Cant',
-  corte: 'Corte',
+  corte: 'Tipo',
   nota: 'Nota',
   obs: 'Obs',
 }
@@ -143,7 +156,12 @@ export function DetailTable({
                     {c === 'ancho' && (l.anchoMm ?? '-')}
                     {c === 'largo' && (l.largoMm ?? '-')}
                     {c === 'cant' && l.cantidad}
-                    {c === 'corte' && (l.tipoCorte ? labelTipoCorte(l.tipoCorte) : '-')}
+                    {c === 'corte' &&
+                      (l.tipoCorte ? (
+                        <span title={labelTipoCorte(l.tipoCorte)}>{l.tipoCorte.toUpperCase()}</span>
+                      ) : (
+                        '-'
+                      ))}
                     {c === 'nota' && (l.nota ?? '-')}
                     {c === 'obs' && (l.observacionesCorte ?? '-')}
                   </TableCell>

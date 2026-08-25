@@ -64,6 +64,19 @@ function startsWith(l: DespieceLinea, prefix: string): boolean {
 export function pareceChapa(l: DespieceLinea): boolean {
   return contains(l, ['chapa'])
 }
+
+// Categoria "resaltada" de una linea, para colorear el nombre del
+// articulo en las tablas de despiece -- solo estas 4, pedido puntual
+// del usuario (comerciales/mecanizado/piezas comunes se identifican
+// por tipoCorte, chapa por texto igual que en el resto de la app).
+export type CategoriaResaltada = 'comercial' | 'mecanizado' | 'pieza-comun' | 'chapa' | null
+export function categoriaResaltada(l: DespieceLinea): CategoriaResaltada {
+  if (l.tipoCorte === 'c') return 'comercial'
+  if (l.tipoCorte === 'mec') return 'mecanizado'
+  if (l.tipoCorte === 'p/c') return 'pieza-comun'
+  if (pareceChapa(l)) return 'chapa'
+  return null
+}
 function pareceRpfvOPlancha(l: DespieceLinea): boolean {
   return contains(l, ['rpfv', 'plancha'])
 }
