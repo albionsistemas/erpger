@@ -205,6 +205,7 @@ model Articulo {
   rubroId               Int?               @map("rubro_id") @db.SmallInt
   modoVenta             ModoVenta?         @map("modo_venta")
   imagenUrl             String?            @map("imagen_url") @db.VarChar(255)
+  pdfUrl                String?            @map("pdf_url") @db.VarChar(255)
   precios               ArticuloPrecio[]
   categoria             Categoria?         @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   creador               Usuario?           @relation("ArticuloCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)

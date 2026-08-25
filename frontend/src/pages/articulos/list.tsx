@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTable, useGo, useDelete, type CrudFilter } from '@refinedev/core'
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,7 @@ interface Categoria {
 interface ArticuloRow {
   id: number
   nombre: string
+  pdfUrl: string | null
   precios: { precioUsd: string }[]
 }
 
@@ -85,20 +86,21 @@ export function ArticulosList() {
               <TableHead>Codigo</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Costo</TableHead>
+              <TableHead>Recursos</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {tableQuery.isLoading && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Cargando...
                 </TableCell>
               </TableRow>
             )}
             {!tableQuery.isLoading && result.data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Sin resultados
                 </TableCell>
               </TableRow>
@@ -108,6 +110,13 @@ export function ArticulosList() {
                 <TableCell className="text-muted-foreground">{a.id}</TableCell>
                 <TableCell className="font-medium">{a.nombre}</TableCell>
                 <TableCell>{a.precios?.[0] ? `US$ ${Number(a.precios[0].precioUsd).toLocaleString('es-AR')}` : '-'}</TableCell>
+                <TableCell>
+                  {a.pdfUrl && (
+                    <a href={a.pdfUrl} target="_blank" rel="noreferrer" title="Ver PDF">
+                      <FileText className="h-5 w-5 text-red-600" />
+                    </a>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/articulos/${a.id}` })}>

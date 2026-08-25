@@ -46,4 +46,9 @@ export class CreateArticuloDto {
     @IsString()
     @MaxLength(255)
     imagenUrl?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    pdfUrl?: string;
 }

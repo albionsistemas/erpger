@@ -20,6 +20,7 @@ interface ArticuloValues {
   modoVenta?: 'UNITARIO' | 'LINEAL_MM' | 'AREA_MM2'
   descripcion?: string
   imagenUrl?: string
+  pdfUrl?: string
 }
 
 const VACIO: ArticuloValues = { nombre: '' }
@@ -60,6 +61,7 @@ export function ArticuloForm({ id }: { id?: number }) {
         modoVenta: record.modoVenta,
         descripcion: record.descripcion,
         imagenUrl: record.imagenUrl,
+        pdfUrl: record.pdfUrl,
       })
     }
   }, [query?.data])
@@ -210,6 +212,16 @@ export function ArticuloForm({ id }: { id?: number }) {
               value={values.imagenUrl ?? ''}
               onChange={(e) => setValues((v) => ({ ...v, imagenUrl: e.target.value }))}
               placeholder="/uploads/articulos/..."
+            />
+          </div>
+
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <Label htmlFor="pdfUrl">URL de PDF</Label>
+            <Input
+              id="pdfUrl"
+              value={values.pdfUrl ?? ''}
+              onChange={(e) => setValues((v) => ({ ...v, pdfUrl: e.target.value }))}
+              placeholder="/uploads/articulos-pdf/..."
             />
           </div>
 

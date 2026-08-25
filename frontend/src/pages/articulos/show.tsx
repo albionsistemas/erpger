@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useShow } from '@refinedev/core'
 import { useParams, Link } from 'react-router-dom'
-import { Pencil, DollarSign, ImageOff } from 'lucide-react'
+import { Pencil, DollarSign, ImageOff, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -27,6 +27,7 @@ interface ArticuloDetalle {
   modoVenta: string | null
   descripcion: string | null
   imagenUrl: string | null
+  pdfUrl: string | null
   categoria: { nombre: string } | null
   subcategoria: { nombre: string } | null
   rubro: { nombre: string } | null
@@ -141,6 +142,15 @@ export function ArticulosShow() {
               </div>
             )}
           </div>
+          {result.pdfUrl && (
+            <div className="col-span-3">
+              <p className="mb-1 text-muted-foreground">PDF</p>
+              <a href={result.pdfUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:underline">
+                <FileText className="h-4 w-4" />
+                Ver PDF
+              </a>
+            </div>
+          )}
         </CardContent>
       </Card>
 
