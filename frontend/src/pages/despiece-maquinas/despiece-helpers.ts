@@ -32,7 +32,13 @@ export interface DespieceLinea {
   observacionesCorte: string | null
   esRepuesto: boolean | null
   verificaStock: boolean | null
-  articulo: { id: number; nombre: string; imagenUrl: string | null; creadoEn: string } | null
+  articulo: {
+    id: number
+    nombre: string
+    imagenUrl: string | null
+    creadoEn: string
+    subcategoria: { imagenUrl: string | null } | null
+  } | null
 }
 
 export interface Grupo {

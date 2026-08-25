@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Pencil, DollarSign, ImageOff, FileText } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import { esNuevo } from '@/lib/nuevo'
+import { imagenArticulo } from '@/lib/articulo-imagen'
 import { NewBadge } from '@/components/NewBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -32,7 +33,7 @@ interface ArticuloDetalle {
   pdfUrl: string | null
   creadoEn: string
   categoria: { nombre: string } | null
-  subcategoria: { nombre: string } | null
+  subcategoria: { nombre: string; imagenUrl: string | null } | null
   rubro: { nombre: string } | null
   precios: Precio[]
 }
@@ -137,8 +138,13 @@ export function ArticulosShow() {
           )}
           <div className="col-span-3">
             <p className="mb-1 text-muted-foreground">Imagen</p>
-            {result.imagenUrl ? (
-              <img src={result.imagenUrl} alt={result.nombre} className="max-w-xs rounded-md border" />
+            {imagenArticulo(result) ? (
+              <>
+                <img src={imagenArticulo(result)!} alt={result.nombre} className="max-w-xs rounded-md border" />
+                {!result.imagenUrl && (
+                  <p className="mt-1 text-xs text-muted-foreground">Imagen generica de la subcategoria (el articulo no tiene foto propia)</p>
+                )}
+              </>
             ) : (
               <div className="flex h-32 w-32 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-muted-foreground">
                 <ImageOff className="h-6 w-6" />

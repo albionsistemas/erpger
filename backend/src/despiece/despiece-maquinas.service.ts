@@ -25,7 +25,7 @@ export class DespieceMaquinasService {
         const [data, total] = await Promise.all([
             this.prisma.despieceMaquina.findMany({
                 where,
-                include: { articulo: true },
+                include: { articulo: { include: { subcategoria: true } } },
                 orderBy: [{ plano: 'asc' }, { item: 'asc' }],
                 ...(sinPaginar ? {} : { skip: query.skip, take: query.limit }),
             }),

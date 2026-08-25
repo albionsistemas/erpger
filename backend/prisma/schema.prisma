@@ -169,6 +169,7 @@ model Subcategoria {
   id          Int        @id @default(autoincrement())
   categoriaId Int        @map("categoria_id") @db.SmallInt
   nombre      String     @db.VarChar(255)
+  imagenUrl   String?    @map("imagen_url") @db.VarChar(255)
   articulos   Articulo[]
   categoria   Categoria  @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 

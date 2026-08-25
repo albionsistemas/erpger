@@ -5,12 +5,14 @@ import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { labelTipoCorte } from '@/lib/despiece-cod'
 import { esNuevo } from '@/lib/nuevo'
+import { imagenArticulo } from '@/lib/articulo-imagen'
 import { NewBadge } from '@/components/NewBadge'
 import { calcularCompra, type DespieceLinea, type Grupo } from './despiece-helpers'
 
 function ImagenCelda({ l }: { l: DespieceLinea }) {
-  return l.articulo?.imagenUrl ? (
-    <img src={l.articulo.imagenUrl} alt={l.articulo.nombre} className="h-9 w-9 rounded object-cover border" />
+  const src = l.articulo ? imagenArticulo(l.articulo) : null
+  return src ? (
+    <img src={src} alt={l.articulo!.nombre} className="h-9 w-9 rounded object-cover border" />
   ) : (
     <div className="flex h-9 w-9 items-center justify-center rounded border border-dashed text-muted-foreground">
       <ImageOff className="h-3.5 w-3.5" />
