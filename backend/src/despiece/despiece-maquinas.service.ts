@@ -69,4 +69,59 @@ export class DespieceMaquinasService {
         const { count } = await this.prisma.despieceMaquina.deleteMany({ where: { plano } });
         return { eliminados: count };
     }
+
+    // Para Ingenieria: en que otras maquinas se usa este articulo (sin
+    // nada de precio/costo, eso es de Compras). Agrupa por plano (texto
+    // libre, sin FK a maquinas) en JS en vez de con GROUP BY en SQL
+    // porque necesitamos ademas la fecha y el usuario de la PRIMERA vez
+    // que se cargo esa pieza en cada maquina, no solo el conteo.
+    async usoEnMaquinas(articuloId: bigint) {
+        const filas = await this.prisma.despieceMaquina.findMany({
+            where: { articuloId },
+            select: {
+                plano: true,
+                creadoEn: true,
+                creador: { select: { id: true, username: true, nombre: true } },
+            },
+            orderBy: { creadoEn: 'asc' },
+        });
+
+        const porPlano = new Map<
+            string,
+            { fechaAlta: Date; usuario: { id: bigint; username: string; nombre: string | null } | null; cantidadPiezas: number }
+        >();
+        for (const f of filas) {
+            if (!f.plano) continue;
+            const existente = porPlano.get(f.plano);
+            if (existente) {
+                existente.cantidadPiezas++;
+            } else {
+                porPlano.set(f.plano, { fechaAlta: f.creadoEn, usuario: f.creador, cantidadPiezas: 1 });
+            }
+        }
+
+        const planos = [...porPlano.keys()];
+        const maquinas = await this.prisma.maquina.findMany({
+            where: { planoId: { in: planos } },
+            include: { tipoMaquina: true },
+        });
+        const maquinaPorPlano = new Map(maquinas.map((m) => [m.planoId, m]));
+
+        return [...porPlano.entries()]
+            .map(([plano, info]) => {
+                const maquina = maquinaPorPlano.get(plano);
+                if (!maquina) return null;
+                return {
+                    maquinaId: maquina.id,
+                    maquinaNombre: maquina.nombre,
+                    planoId: maquina.planoId,
+                    tipoMaquina: maquina.tipoMaquina?.nombre ?? null,
+                    fechaAlta: info.fechaAlta,
+                    usuario: info.usuario,
+                    cantidadPiezas: info.cantidadPiezas,
+                };
+            })
+            .filter((r): r is NonNullable<typeof r> => r !== null)
+            .sort((a, b) => b.cantidadPiezas - a.cantidadPiezas);
+    }
 }

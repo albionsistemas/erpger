@@ -26,6 +26,13 @@ export class DespieceMaquinasController {
         return this.despiece.findOne(id);
     }
 
+    // Para Ingenieria: en que otras maquinas se usa un articulo (ver
+    // DespieceMaquinasService.usoEnMaquinas -- sin nada de precio).
+    @Get('uso-articulo/:articuloId')
+    usoEnMaquinas(@Param('articuloId', ParseBigIntPipe) articuloId: bigint) {
+        return this.despiece.usoEnMaquinas(articuloId);
+    }
+
     @Permiso('ingenieria', 'EDITAR')
     @Post()
     create(@Body() dto: CreateDespieceMaquinaDto, @CurrentUser() user: JwtPayload) {

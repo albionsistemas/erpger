@@ -20,7 +20,7 @@ import {
 } from './pages/ordenes-fabricacion'
 import { OrdenesTrabajoList, OrdenesTrabajoCreate, OrdenesTrabajoEdit, OrdenesTrabajoShow } from './pages/ordenes-trabajo'
 import { MaquinasList, MaquinasCreate, MaquinasEdit, MaquinasShow } from './pages/maquinas'
-import { DespieceMaquinaPage } from './pages/despiece-maquinas'
+import { DespieceMaquinaPage, ArticuloUsoPage } from './pages/despiece-maquinas'
 import { LayoutPlaceholder } from './pages/layout/LayoutPlaceholder'
 import { TiposMaquinaPage } from './pages/tipos-maquina/TiposMaquinaPage'
 import { CategoriasPage } from './pages/compras/CategoriasPage'
@@ -116,6 +116,7 @@ function App() {
               <Route path="nuevo" element={<ArticulosCreate />} />
               <Route path=":id" element={<ArticulosShow />} />
               <Route path=":id/editar" element={<ArticulosEdit />} />
+              <Route path=":id/uso-en-maquinas" element={<ArticuloUsoPage />} />
             </Route>
           </Route>
         </Routes>

@@ -18,7 +18,7 @@ function ArticuloCelda({ l, mostrarDenominacion }: { l: DespieceLinea; mostrarDe
   return (
     <div className="flex flex-col">
       {l.articulo ? (
-        <Link to={`/articulos/${l.articulo.id}`} className="text-primary hover:underline">
+        <Link to={`/articulos/${l.articulo.id}/uso-en-maquinas`} className="text-primary hover:underline">
           {l.articulo.nombre}
         </Link>
       ) : (
