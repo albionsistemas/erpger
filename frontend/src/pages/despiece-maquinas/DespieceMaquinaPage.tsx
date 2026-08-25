@@ -258,7 +258,7 @@ export function DespieceMaquinaPage() {
           <TabsContent value="general">
             <DetailTable
               lineas={lineas}
-              columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte', 'nota']}
+              columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte']}
               acciones="full"
               onEditar={abrirEditar}
               onEliminar={eliminar}
@@ -301,7 +301,7 @@ export function DespieceMaquinaPage() {
             <DetailTable
               titulo="Compras en bandas, PIAZ y mangueras"
               lineas={compras.bandas}
-              columnas={['codigo', 'articulo', 'ancho', 'largo', 'cant', 'nota']}
+              columnas={['codigo', 'articulo', 'ancho', 'largo', 'cant']}
               acciones="full"
               onEditar={abrirEditar}
               onEliminar={eliminar}

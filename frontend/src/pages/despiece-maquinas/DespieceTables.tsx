@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Pencil, Trash2, ImageOff } from 'lucide-react'
+import { Pencil, Trash2, ImageOff, StickyNote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { labelTipoCorte } from '@/lib/despiece-cod'
 import { esNuevo } from '@/lib/nuevo'
 import { imagenArticulo } from '@/lib/articulo-imagen'
@@ -29,6 +30,20 @@ function ImagenCelda({ l }: { l: DespieceLinea }) {
     <div className="flex h-9 w-9 items-center justify-center rounded border border-dashed text-muted-foreground">
       <ImageOff className="h-3.5 w-3.5" />
     </div>
+  )
+}
+
+function NotaIcono({ nota }: { nota: string | null }) {
+  if (!nota) return null
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button type="button" title="Ver nota" className="text-amber-600 hover:text-amber-700">
+          <StickyNote className="h-4 w-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 whitespace-pre-wrap text-sm">{nota}</PopoverContent>
+    </Popover>
   )
 }
 
@@ -70,7 +85,6 @@ export type ColDetalle =
   | 'largo'
   | 'cant'
   | 'corte'
-  | 'nota'
   | 'obs'
 
 const HEADS: Record<ColDetalle, string> = {
@@ -84,7 +98,6 @@ const HEADS: Record<ColDetalle, string> = {
   largo: 'Largo',
   cant: 'Cant',
   corte: 'Tipo',
-  nota: 'Nota',
   obs: 'Obs',
 }
 
@@ -109,7 +122,7 @@ export function DetailTable({
   onEliminar,
   denominacionEnArticulo,
 }: DetailTableProps) {
-  const cols = columnas.length + (acciones !== 'ninguna' ? 1 : 0)
+  const cols = columnas.length + 1
   return (
     <div className="flex flex-col gap-2">
       {titulo && <h3 className="text-sm font-semibold">{titulo}</h3>}
@@ -121,7 +134,7 @@ export function DetailTable({
               {columnas.map((c) => (
                 <TableHead key={c}>{HEADS[c]}</TableHead>
               ))}
-              {acciones !== 'ninguna' && <TableHead className="text-right">Acciones</TableHead>}
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -162,24 +175,26 @@ export function DetailTable({
                       ) : (
                         '-'
                       ))}
-                    {c === 'nota' && (l.nota ?? '-')}
                     {c === 'obs' && (l.observacionesCorte ?? '-')}
                   </TableCell>
                 ))}
-                {acciones !== 'ninguna' && (
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => onEditar?.(l)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      {acciones === 'full' && (
-                        <Button variant="ghost" size="icon" onClick={() => onEliminar?.(l)}>
-                          <Trash2 className="h-4 w-4" />
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <NotaIcono nota={l.nota} />
+                    {acciones !== 'ninguna' && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => onEditar?.(l)}>
+                          <Pencil className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
+                        {acciones === 'full' && (
+                          <Button variant="ghost" size="icon" onClick={() => onEliminar?.(l)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -210,7 +225,7 @@ export function GroupTable({ titulo, subtitulo, grupos, mostrarNota, mostrarCalc
               <TableHead>Codigo</TableHead>
               <TableHead>Articulo</TableHead>
               <TableHead>Cantidad</TableHead>
-              {mostrarNota && <TableHead>Nota</TableHead>}
+              {mostrarNota && <TableHead className="w-8" />}
               {mostrarCalculo && (
                 <>
                   <TableHead>Comercial</TableHead>
@@ -240,7 +255,11 @@ export function GroupTable({ titulo, subtitulo, grupos, mostrarNota, mostrarCalc
                   </TableCell>
                   <TableCell className="font-medium">{g.nombre}</TableCell>
                   <TableCell>{g.cantidad}</TableCell>
-                  {mostrarNota && <TableCell className="text-muted-foreground">{g.nota ?? '-'}</TableCell>}
+                  {mostrarNota && (
+                    <TableCell>
+                      <NotaIcono nota={g.nota} />
+                    </TableCell>
+                  )}
                   {mostrarCalculo && (
                     <>
                       <TableCell className="text-muted-foreground">
