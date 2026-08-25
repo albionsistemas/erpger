@@ -27,6 +27,7 @@ import { CategoriasPage } from './pages/compras/CategoriasPage'
 import { SubcategoriasPage } from './pages/compras/SubcategoriasPage'
 import { MonedasPage } from './pages/compras/MonedasPage'
 import { ArticulosList, ArticulosCreate, ArticulosEdit, ArticulosShow } from './pages/articulos'
+import { EmpresasPage } from './pages/ajustes/EmpresasPage'
 
 function App() {
   return (
@@ -111,6 +112,7 @@ function App() {
             <Route path="/compras/categorias" element={<CategoriasPage />} />
             <Route path="/compras/subcategorias" element={<SubcategoriasPage />} />
             <Route path="/compras/monedas" element={<MonedasPage />} />
+            <Route path="/ajustes/empresas" element={<EmpresasPage />} />
             <Route path="/articulos">
               <Route index element={<ArticulosList />} />
               <Route path="nuevo" element={<ArticulosCreate />} />

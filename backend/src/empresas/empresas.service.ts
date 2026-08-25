@@ -3,9 +3,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmpresaDto } from './dto/create-empresa.dto';
 import { UpdateEmpresaDto } from './dto/update-empresa.dto';
 
-// Seam minimo de multi-tenancy (ver db/postgresql/003_empresas.sql).
-// No hay aislamiento de datos de negocio por empresa todavia -- este
-// CRUD es solo para tener el concepto de tenant disponible en Auth.
+// Nacio como seam minimo de multi-tenancy para Auth (ver
+// db/postgresql/003_empresas.sql), pero Albion factura/compra desde 2 o
+// 3 firmas reales a la vez (ver 027_empresas_datos.sql) -- estos
+// registros son datos de negocio reales (CUIT, banco, logo para
+// membretes), no solo el concepto de tenant. Sigue sin haber
+// aislamiento de datos por empresa en el resto del sistema.
 @Injectable()
 export class EmpresasService {
     constructor(private readonly prisma: PrismaService) {}
@@ -32,5 +35,10 @@ export class EmpresasService {
     async remove(id: bigint) {
         await this.findOne(id);
         await this.prisma.empresa.delete({ where: { id } });
+    }
+
+    async updateLogo(id: bigint, logoUrl: string) {
+        await this.findOne(id);
+        return this.prisma.empresa.update({ where: { id }, data: { logoUrl } });
     }
 }

@@ -45,10 +45,23 @@ model Usuario {
 }
 
 model Empresa {
-  id       BigInt    @id @default(autoincrement())
-  nombre   String    @db.VarChar(150)
-  activa   Boolean   @default(true)
-  usuarios Usuario[]
+  id             BigInt    @id @default(autoincrement())
+  nombre         String    @db.VarChar(150)
+  activa         Boolean   @default(true)
+  cuit           String?   @db.VarChar(20)
+  direccion      String?   @db.VarChar(255)
+  ciudad         String?   @db.VarChar(100)
+  pais           String?   @db.VarChar(60)
+  telefono       String?   @db.VarChar(50)
+  email          String?   @db.VarChar(255)
+  web            String?   @db.VarChar(255)
+  logoUrl        String?   @map("logo_url") @db.VarChar(255)
+  bancoNombre    String?   @map("banco_nombre") @db.VarChar(60)
+  bancoCuenta    String?   @map("banco_cuenta") @db.VarChar(40)
+  bancoSucursal  String?   @map("banco_sucursal") @db.VarChar(40)
+  bancoCbu       String?   @map("banco_cbu") @db.VarChar(40)
+  bancoAlias     String?   @map("banco_alias") @db.VarChar(150)
+  usuarios       Usuario[]
 
   @@map("empresas")
   @@schema("core")
