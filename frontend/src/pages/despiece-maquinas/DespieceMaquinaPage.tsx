@@ -212,8 +212,10 @@ export function DespieceMaquinaPage() {
 
   const lineasPantografo = useMemo(() => pantografo(lineas), [lineas])
 
+  type TipoPdf = 'general' | 'corte' | 'compras' | 'pantografo' | 'chapas'
+  const [tab, setTab] = useState<TipoPdf>('general')
   const [imprimiendo, setImprimiendo] = useState<string | null>(null)
-  const imprimir = async (tipo: 'general' | 'corte' | 'compras' | 'pantografo' | 'chapas') => {
+  const imprimir = async (tipo: TipoPdf) => {
     if (!maquina) return
     setImprimiendo(tipo)
     try {
@@ -226,15 +228,7 @@ export function DespieceMaquinaPage() {
       setImprimiendo(null)
     }
   }
-
-  const BotonImprimir = ({ tipo, texto = 'Imprimir' }: { tipo: Parameters<typeof imprimir>[0]; texto?: string }) => (
-    <div className="flex justify-end">
-      <Button variant="destructive" size="sm" disabled={imprimiendo === tipo} onClick={() => imprimir(tipo)}>
-        <Printer className="h-4 w-4" />
-        {imprimiendo === tipo ? 'Generando...' : texto}
-      </Button>
-    </div>
-  )
+  const textoImprimir = tab === 'general' ? 'Imprimir (sin fotos)' : 'Imprimir'
 
   if (!maquina) return <p className="text-muted-foreground">Cargando...</p>
 
@@ -265,12 +259,16 @@ export function DespieceMaquinaPage() {
           <Plus />
           Agregar linea
         </Button>
+        <Button variant="destructive" disabled={imprimiendo === tab} onClick={() => imprimir(tab)}>
+          <Printer className="h-4 w-4" />
+          {imprimiendo === tab ? 'Generando...' : textoImprimir}
+        </Button>
       </div>
 
       {loading && <p className="text-muted-foreground">Cargando...</p>}
 
       {!loading && (
-        <Tabs defaultValue="general">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as TipoPdf)}>
           <TabsList>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="corte">Corte</TabsTrigger>
@@ -279,8 +277,7 @@ export function DespieceMaquinaPage() {
             <TabsTrigger value="chapas">Chapas</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general" className="flex flex-col gap-3">
-            <BotonImprimir tipo="general" texto="Imprimir (sin fotos)" />
+          <TabsContent value="general">
             <DetailTable
               lineas={lineas}
               columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte']}
@@ -292,7 +289,6 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="corte" className="flex flex-col gap-6">
-            <BotonImprimir tipo="corte" />
             <DetailTable
               titulo="Cortes de materiales"
               subtitulo="Se filtra las cadenas 'delrin', 'delree', 'poliprolipeno', 'varilla', 'bronce', 'chapa' y 'nylon'"
@@ -322,7 +318,6 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="compras" className="flex flex-col gap-6">
-            <BotonImprimir tipo="compras" />
             <GroupTable titulo="Compra en comerciales" subtitulo="Agrupado por articulo, sumando cantidades" grupos={compras.comerciales} />
             <GroupTable titulo="Piezas comunes" grupos={compras.piezasComunes} mostrarNota />
             <DetailTable
@@ -343,8 +338,7 @@ export function DespieceMaquinaPage() {
             />
           </TabsContent>
 
-          <TabsContent value="pantografo" className="flex flex-col gap-3">
-            <BotonImprimir tipo="pantografo" />
+          <TabsContent value="pantografo">
             <DetailTable
               lineas={lineasPantografo}
               columnas={['pl', 'denominacion', 'articulo', 'ancho', 'largo', 'cant', 'obs', 'codigo']}
@@ -354,7 +348,6 @@ export function DespieceMaquinaPage() {
           </TabsContent>
 
           <TabsContent value="chapas" className="flex flex-col gap-6">
-            <BotonImprimir tipo="chapas" />
             <DetailTable
               titulo="Chapas"
               lineas={chapas.detalle}
