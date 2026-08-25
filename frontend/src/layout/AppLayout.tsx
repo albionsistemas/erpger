@@ -30,7 +30,7 @@ const NAV: { grupo: string; items: NavItem[] }[] = [
   {
     grupo: 'Planificacion',
     items: [
-      { label: 'Ordenes de Fabricacion', to: '/ordenes-fabricacion', icon: FileText, modulo: 'planificacion' },
+      { label: 'Ordenes de Fabricacion (630)', to: '/ordenes-fabricacion', icon: FileText, modulo: 'planificacion' },
       { label: 'Ordenes de Trabajo', to: '/ordenes-trabajo', icon: ClipboardList, modulo: 'planificacion' },
     ],
   },
