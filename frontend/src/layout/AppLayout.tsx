@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useLogout, useGetIdentity } from '@refinedev/core'
-import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut, Boxes, ListTree, DollarSign, Package, Building2 } from 'lucide-react'
+import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut, Boxes, ListTree, DollarSign, Package, Building2, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { getCurrentPayload } from '@/auth/token-storage'
@@ -33,6 +33,10 @@ const NAV: { grupo: string; items: NavItem[] }[] = [
       { label: 'Ordenes de Fabricacion (630)', to: '/ordenes-fabricacion', icon: FileText, modulo: 'planificacion' },
       { label: 'Ordenes de Trabajo', to: '/ordenes-trabajo', icon: ClipboardList, modulo: 'planificacion' },
     ],
+  },
+  {
+    grupo: 'Ventas',
+    items: [{ label: 'Clientes', to: '/ventas/clientes', icon: Users, modulo: 'ventas' }],
   },
   {
     grupo: 'Compras',

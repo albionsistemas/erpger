@@ -22,6 +22,7 @@ model Usuario {
   empresaId                BigInt?                @map("empresa_id")
   articuloPreciosCreados   ArticuloPrecio[]
   articulosCreados         Articulo[]             @relation("ArticuloCreadoPor")
+  clientesCreados          Cliente[]              @relation("ClienteCreadoPor")
   cotizacionesCreadas      Cotizacion[]
   permisos                 UsuarioModuloPermiso[]
   empresa                  Empresa?               @relation(fields: [empresaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -93,9 +94,41 @@ model UsuarioModuloPermiso {
 model Cliente {
   id                 BigInt             @id @default(autoincrement())
   razonSocial        String             @map("razon_social") @db.VarChar(255)
+  cuit               String?            @db.VarChar(30)
+  direccion          String?            @db.VarChar(255)
+  telefono           String?            @db.VarChar(60)
+  email              String?            @db.VarChar(255)
+  provincia          String?            @db.VarChar(100)
+  pais               String?            @db.VarChar(60)
+  rubro              String?            @db.VarChar(180)
+  creadoPor          BigInt?            @map("creado_por")
+  creadoEn           DateTime           @default(now()) @map("creado_en") @db.Timestamptz(6)
+  creador            Usuario?           @relation("ClienteCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ordenesFabricacion OrdenFabricacion[]
+  contactos          ClienteContacto[]
 
   @@map("clientes")
+  @@schema("catalogo")
+}
+
+// Legacy: hasta 4 contactos fijos por cliente (NombreContacto1..4 +
+// Cargo/Telefono/Mail cada uno). Se modela como tabla aparte en vez de
+// columnas fijas para no limitar a 4 y poder mostrarlos como lista en
+// la ficha del cliente. La legacy no tenia foto por contacto -- avatar
+// queda disponible para cargar de ahora en mas, no viene de la import.
+model ClienteContacto {
+  id        BigInt  @id @default(autoincrement())
+  clienteId BigInt  @map("cliente_id")
+  nombre    String? @db.VarChar(255)
+  cargo     String? @db.VarChar(60)
+  telefono  String? @db.VarChar(60)
+  email     String? @db.VarChar(255)
+  avatarUrl String? @map("avatar_url") @db.VarChar(255)
+  orden     Int     @default(1) @db.SmallInt
+  cliente   Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([clienteId], map: "idx_cliente_contactos_cliente")
+  @@map("cliente_contactos")
   @@schema("catalogo")
 }
 

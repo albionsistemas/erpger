@@ -7,6 +7,7 @@
 backup_desarrollo2013.sql
 COPIA_OF/
 COPIA_IMG/
+/clientes/
 
 # Node (cada subproyecto tiene ademas su propio .gitignore mas especifico)
 node_modules/

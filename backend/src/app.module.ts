@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { EmpresasModule } from './empresas/empresas.module';
+import { ClientesModule } from './clientes/clientes.module';
 import { CatalogosModule } from './catalogos/catalogos.module';
 import { OperariosModule } from './operarios/operarios.module';
 import { ArticulosModule } from './articulos/articulos.module';
@@ -26,6 +27,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
         UsuariosModule,
         ModulosModule,
         EmpresasModule,
+        ClientesModule,
         CatalogosModule,
         OperariosModule,
         ArticulosModule,
