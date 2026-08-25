@@ -81,6 +81,16 @@ const VACIO: FormValues = {
 
 const SIN_FILTRO = 'todos'
 
+// legacy: el flag "chapas" de despiecemaquinas nunca se cargaba en la
+// practica (100% NULL incluso en filas cuyo texto dice "chapa") -- las
+// pantallas de compras/chapas del legacy clasificaban buscando la
+// palabra "chapa" en el texto libre del articulo, no por ese booleano.
+// Mismo criterio aca para decidir mm (lineal) vs mm² (area) en el modo
+// agrupado.
+function pareceChapa(l: DespieceLinea): boolean {
+  return /chapa/i.test(l.articuloTexto ?? '') || /chapa/i.test(l.articulo?.nombre ?? '') || /chapa/i.test(l.denominacion ?? '')
+}
+
 export function DespieceMaquinaPage() {
   const { id } = useParams()
   const [maquina, setMaquina] = useState<Maquina | null>(null)
@@ -130,7 +140,7 @@ export function DespieceMaquinaPage() {
     for (const l of filtradas) {
       const clave = l.articuloId ? `a-${l.articuloId}` : `t-${l.articuloTexto ?? l.denominacion ?? l.id}`
       const nombre = l.articulo?.nombre ?? l.articuloTexto ?? l.denominacion ?? '(sin nombre)'
-      const esChapa = !!l.esChapa
+      const esChapa = pareceChapa(l)
       const factor = esChapa ? (l.anchoMm ?? 0) * (l.largoMm ?? 0) : (l.largoMm ?? 0)
       const existente = mapa.get(clave)
       if (existente) {
