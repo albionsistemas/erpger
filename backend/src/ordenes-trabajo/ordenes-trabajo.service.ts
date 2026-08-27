@@ -125,11 +125,13 @@ export class OrdenesTrabajoService {
                 otId,
                 sectorId,
                 completada: dto.completada,
+                porcentaje: dto.completada ? 100 : 0,
                 fechaCompletada: dto.fechaCompletada,
                 usuarioId: dto.usuarioId !== undefined ? BigInt(dto.usuarioId) : undefined,
             },
             update: {
                 completada: dto.completada,
+                porcentaje: dto.completada ? 100 : 0,
                 fechaCompletada: dto.fechaCompletada,
                 usuarioId: dto.usuarioId !== undefined ? BigInt(dto.usuarioId) : undefined,
             },

@@ -9,6 +9,7 @@ interface Etapa {
   otId: number
   sectorId: number
   completada: boolean
+  porcentaje: number | null
   fechaCompletada: string | null
   sector: { id: number; nombre: string; orden: number }
 }
@@ -53,7 +54,11 @@ export function EtapasTab({ otId }: { otId: number }) {
             <TableCell>{etapa.sector.nombre}</TableCell>
             <TableCell>
               <Badge variant={etapa.completada ? 'default' : 'secondary'}>
-                {etapa.completada ? 'Completada' : 'Pendiente'}
+                {etapa.completada
+                  ? 'Completada'
+                  : etapa.porcentaje
+                    ? `En proceso (${etapa.porcentaje}%)`
+                    : 'Pendiente'}
               </Badge>
             </TableCell>
             <TableCell>{etapa.fechaCompletada?.slice(0, 10) ?? '-'}</TableCell>
