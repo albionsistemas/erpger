@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { usePuedeEditar } from '@/auth/usePermiso'
+import { SinPermiso } from '@/components/SinPermiso'
 
 interface ArticuloValues {
   nombre: string
@@ -84,6 +86,9 @@ export function ArticuloForm({ id }: { id?: number }) {
     const newId = (result as any)?.data?.id ?? id
     navigate(newId ? `/articulos/${newId}` : '/articulos')
   }
+
+  const puedeEditar = usePuedeEditar('compras')
+  if (!puedeEditar) return <SinPermiso />
 
   return (
     <Card className="max-w-3xl">

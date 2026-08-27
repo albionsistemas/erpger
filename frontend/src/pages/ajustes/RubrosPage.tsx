@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Rubro {
   id: number
@@ -14,6 +15,7 @@ interface Rubro {
 }
 
 export function RubrosPage() {
+  const puedeEditar = usePuedeEditar('ajustes')
   const [items, setItems] = useState<Rubro[]>([])
   const [loading, setLoading] = useState(true)
   const [buscar, setBuscar] = useState('')
@@ -71,10 +73,12 @@ export function RubrosPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Rubros</h1>
-        <Button onClick={abrirNuevo}>
-          <Plus />
-          Nuevo Rubro
-        </Button>
+        {puedeEditar && (
+          <Button onClick={abrirNuevo}>
+            <Plus />
+            Nuevo Rubro
+          </Button>
+        )}
       </div>
 
       <Input
@@ -111,14 +115,16 @@ export function RubrosPage() {
               <TableRow key={item.id}>
                 <TableCell className="font-medium">{item.nombre}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {puedeEditar && (
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

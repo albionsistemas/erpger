@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DetailTable, GroupTable } from './DespieceTables'
+import { usePuedeEditar } from '@/auth/usePermiso'
 import {
   type DespieceLinea,
   cortesDeMateriales,
@@ -223,6 +224,10 @@ export function DespieceMaquinaPage() {
   }
   const textoImprimir = tab === 'general' ? 'Imprimir (sin fotos)' : 'Imprimir'
 
+  const puedeEditar = usePuedeEditar('ingenieria')
+  const accionesFull = puedeEditar ? 'full' : 'ninguna'
+  const accionesEditar = puedeEditar ? 'editar' : 'ninguna'
+
   if (!maquina) return <p className="text-muted-foreground">Cargando...</p>
 
   return (
@@ -244,10 +249,12 @@ export function DespieceMaquinaPage() {
           <h1 className="text-xl font-semibold">{maquina.nombre}</h1>
           <p className="text-sm text-muted-foreground">Plano {maquina.planoId} — Despiece</p>
         </div>
-        <Button onClick={abrirNuevo}>
-          <Plus />
-          Agregar linea
-        </Button>
+        {puedeEditar && (
+          <Button onClick={abrirNuevo}>
+            <Plus />
+            Agregar linea
+          </Button>
+        )}
         <Button variant="destructive" disabled={imprimiendo === tab} onClick={() => imprimir(tab)}>
           <Printer className="h-4 w-4" />
           {imprimiendo === tab ? 'Generando...' : textoImprimir}
@@ -270,7 +277,7 @@ export function DespieceMaquinaPage() {
             <DetailTable
               lineas={lineas}
               columnas={['imagen', 'item', 'codigo', 'pl', 'articulo', 'ancho', 'largo', 'cant', 'corte']}
-              acciones="full"
+              acciones={accionesFull}
               onEditar={abrirEditar}
               onEliminar={eliminar}
               denominacionEnArticulo
@@ -283,7 +290,7 @@ export function DespieceMaquinaPage() {
               subtitulo="Se filtra las cadenas 'delrin', 'delree', 'poliprolipeno', 'varilla', 'bronce', 'chapa' y 'nylon'"
               lineas={corte.materiales}
               columnas={['codigo', 'pl', 'articulo', 'largo', 'cant', 'corte']}
-              acciones="full"
+              acciones={accionesFull}
               onEditar={abrirEditar}
               onEliminar={eliminar}
             />
@@ -291,7 +298,7 @@ export function DespieceMaquinaPage() {
               titulo="Otros materiales"
               lineas={corte.otros}
               columnas={['codigo', 'pl', 'articulo', 'largo', 'cant', 'corte']}
-              acciones="full"
+              acciones={accionesFull}
               onEditar={abrirEditar}
               onEliminar={eliminar}
             />
@@ -300,7 +307,7 @@ export function DespieceMaquinaPage() {
               subtitulo="Se filtra las cadenas 'delree', 'poliprolipeno', 'varilla', 'bronce', 'chapa' y 'nylon'"
               lineas={corte.mecanizado}
               columnas={['codigo', 'pl', 'articulo', 'largo', 'cant', 'corte']}
-              acciones="full"
+              acciones={accionesFull}
               onEditar={abrirEditar}
               onEliminar={eliminar}
             />
@@ -313,7 +320,7 @@ export function DespieceMaquinaPage() {
               titulo="Compras en bandas, PIAZ y mangueras"
               lineas={compras.bandas}
               columnas={['codigo', 'articulo', 'ancho', 'largo', 'cant']}
-              acciones="full"
+              acciones={accionesFull}
               onEditar={abrirEditar}
               onEliminar={eliminar}
             />
@@ -331,7 +338,7 @@ export function DespieceMaquinaPage() {
             <DetailTable
               lineas={lineasPantografo}
               columnas={['pl', 'denominacion', 'articulo', 'ancho', 'largo', 'cant', 'obs', 'codigo']}
-              acciones="editar"
+              acciones={accionesEditar}
               onEditar={abrirEditar}
             />
           </TabsContent>
@@ -341,7 +348,7 @@ export function DespieceMaquinaPage() {
               titulo="Chapas"
               lineas={chapas.detalle}
               columnas={['denominacion', 'ancho', 'largo', 'cant', 'corte']}
-              acciones="editar"
+              acciones={accionesEditar}
               onEditar={abrirEditar}
             />
             <GroupTable
@@ -355,7 +362,7 @@ export function DespieceMaquinaPage() {
               titulo="Detalle: RPFV - Planchas"
               lineas={chapas.rpfvDetalle}
               columnas={['denominacion', 'ancho', 'largo', 'cant', 'corte']}
-              acciones="editar"
+              acciones={accionesEditar}
               onEditar={abrirEditar}
             />
             <GroupTable

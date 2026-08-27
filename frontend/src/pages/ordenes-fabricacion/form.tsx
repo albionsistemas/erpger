@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { usePuedeEditar } from '@/auth/usePermiso'
+import { SinPermiso } from '@/components/SinPermiso'
 
 interface OrdenFabricacionValues {
   numeroOf: number
@@ -69,6 +71,9 @@ export function OrdenFabricacionForm({ id }: { id?: number }) {
     const newId = (result as any)?.data?.id ?? id
     navigate(newId ? `/ordenes-fabricacion/${newId}` : '/ordenes-fabricacion')
   }
+
+  const puedeEditar = usePuedeEditar('planificacion')
+  if (!puedeEditar) return <SinPermiso />
 
   return (
     <Card className="max-w-2xl">

@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { usePuedeEditar } from '@/auth/usePermiso'
+import { SinPermiso } from '@/components/SinPermiso'
 
 interface MaquinaValues {
   planoId: string
@@ -59,6 +61,7 @@ export function MaquinaForm({ id }: { id?: number }) {
   }, [query?.data])
 
   const { items: tiposMaquina } = useCatalogo('tipos-maquina')
+  const puedeEditar = usePuedeEditar('ingenieria')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,6 +69,8 @@ export function MaquinaForm({ id }: { id?: number }) {
     const newId = (result as any)?.data?.id ?? id
     navigate(newId ? `/maquinas/${newId}` : '/maquinas')
   }
+
+  if (!puedeEditar) return <SinPermiso />
 
   return (
     <Card className="max-w-2xl">

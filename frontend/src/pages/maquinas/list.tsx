@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface MaquinaRow {
   id: number
@@ -25,6 +26,7 @@ interface MaquinaRow {
 const SIN_FILTRO = 'todos'
 
 export function MaquinasList() {
+  const puedeEditar = usePuedeEditar('ingenieria')
   const [buscar, setBuscar] = useState('')
   const [filtroTipo, setFiltroTipo] = useState<string>(SIN_FILTRO)
   const [tiposMaquina, setTiposMaquina] = useState<{ id: number; nombre: string }[]>([])
@@ -108,12 +110,14 @@ export function MaquinasList() {
             <FileSpreadsheet className="h-4 w-4" />
             {exportando ? 'Exportando...' : 'Exportar a Excel'}
           </Button>
-          <Button asChild>
-            <Link to="/maquinas/nueva">
-              <Plus />
-              Nueva Maquina
-            </Link>
-          </Button>
+          {puedeEditar && (
+            <Button asChild>
+              <Link to="/maquinas/nueva">
+                <Plus />
+                Nueva Maquina
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -208,20 +212,24 @@ export function MaquinasList() {
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/maquinas/${m.id}` })}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => go({ to: `/maquinas/${m.id}/editar` })}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Eliminar la maquina ${m.nombre}?`)) {
-                          deleteMaquina({ resource: 'maquinas', id: m.id })
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {puedeEditar && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => go({ to: `/maquinas/${m.id}/editar` })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (confirm(`Eliminar la maquina ${m.nombre}?`)) {
+                              deleteMaquina({ resource: 'maquinas', id: m.id })
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

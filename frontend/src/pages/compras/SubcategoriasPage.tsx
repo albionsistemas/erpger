@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Categoria {
   id: number
@@ -24,6 +25,7 @@ interface Subcategoria {
 const SIN_FILTRO = 'todas'
 
 export function SubcategoriasPage() {
+  const puedeEditar = usePuedeEditar('compras')
   const [items, setItems] = useState<Subcategoria[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
@@ -92,10 +94,12 @@ export function SubcategoriasPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Subcategorias de Articulos</h1>
-        <Button onClick={abrirNuevo}>
-          <Plus />
-          Nueva Subcategoria
-        </Button>
+        {puedeEditar && (
+          <Button onClick={abrirNuevo}>
+            <Plus />
+            Nueva Subcategoria
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-3">
@@ -149,14 +153,16 @@ export function SubcategoriasPage() {
                 <TableCell className="font-medium">{item.nombre}</TableCell>
                 <TableCell className="text-muted-foreground">{item.categoria?.nombre}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {puedeEditar && (
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/api-client'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Etapa {
   otId: number
@@ -15,6 +16,7 @@ interface Etapa {
 }
 
 export function EtapasTab({ otId }: { otId: number }) {
+  const puedeEditar = usePuedeEditar('planificacion')
   const [etapas, setEtapas] = useState<Etapa[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,14 +65,16 @@ export function EtapasTab({ otId }: { otId: number }) {
             </TableCell>
             <TableCell>{etapa.fechaCompletada?.slice(0, 10) ?? '-'}</TableCell>
             <TableCell className="text-right">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => toggle(etapa.sectorId, !etapa.completada)}
-              >
-                {etapa.completada ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-                {etapa.completada ? 'Marcar pendiente' : 'Marcar completada'}
-              </Button>
+              {puedeEditar && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => toggle(etapa.sectorId, !etapa.completada)}
+                >
+                  {etapa.completada ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                  {etapa.completada ? 'Marcar pendiente' : 'Marcar completada'}
+                </Button>
+              )}
             </TableCell>
           </TableRow>
         ))}

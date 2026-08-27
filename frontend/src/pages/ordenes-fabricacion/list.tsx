@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface OrdenFabricacionRow {
   id: number
@@ -21,6 +22,7 @@ interface OrdenFabricacionRow {
 }
 
 export function OrdenesFabricacionList() {
+  const puedeEditar = usePuedeEditar('planificacion')
   const [buscar, setBuscar] = useState('')
   const go = useGo()
   const { mutate: deleteOf } = useDelete()
@@ -37,12 +39,14 @@ export function OrdenesFabricacionList() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Ordenes de Fabricacion</h1>
-        <Button asChild>
-          <Link to="/ordenes-fabricacion/nueva">
-            <Plus />
-            Nueva OF
-          </Link>
-        </Button>
+        {puedeEditar && (
+          <Button asChild>
+            <Link to="/ordenes-fabricacion/nueva">
+              <Plus />
+              Nueva OF
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Input
@@ -97,24 +101,28 @@ export function OrdenesFabricacionList() {
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/ordenes-fabricacion/${of.id}` })}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => go({ to: `/ordenes-fabricacion/${of.id}/editar` })}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Eliminar OF ${of.numeroOf}? Se eliminan tambien sus OTs.`)) {
-                          deleteOf({ resource: 'ordenes-fabricacion', id: of.id })
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {puedeEditar && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => go({ to: `/ordenes-fabricacion/${of.id}/editar` })}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (confirm(`Eliminar OF ${of.numeroOf}? Se eliminan tambien sus OTs.`)) {
+                              deleteOf({ resource: 'ordenes-fabricacion', id: of.id })
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

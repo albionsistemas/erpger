@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Categoria {
   id: number
@@ -27,6 +28,7 @@ interface ArticuloRow {
 const SIN_FILTRO = 'todas'
 
 export function ArticulosList() {
+  const puedeEditar = usePuedeEditar('compras')
   const [buscar, setBuscar] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>(SIN_FILTRO)
   const [categorias, setCategorias] = useState<Categoria[]>([])
@@ -52,12 +54,14 @@ export function ArticulosList() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Articulos</h1>
-        <Button asChild>
-          <Link to="/articulos/nuevo">
-            <Plus />
-            Nuevo Articulo
-          </Link>
-        </Button>
+        {puedeEditar && (
+          <Button asChild>
+            <Link to="/articulos/nuevo">
+              <Plus />
+              Nuevo Articulo
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="flex gap-3">
@@ -128,20 +132,24 @@ export function ArticulosList() {
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/articulos/${a.id}` })}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => go({ to: `/articulos/${a.id}/editar` })}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Eliminar el articulo "${a.nombre}"?`)) {
-                          deleteArticulo({ resource: 'articulos', id: a.id })
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {puedeEditar && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => go({ to: `/articulos/${a.id}/editar` })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (confirm(`Eliminar el articulo "${a.nombre}"?`)) {
+                              deleteArticulo({ resource: 'articulos', id: a.id })
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface TipoMaquina {
   id: number
@@ -15,6 +16,7 @@ interface TipoMaquina {
 }
 
 export function TiposMaquinaPage() {
+  const puedeEditar = usePuedeEditar('ingenieria')
   const [items, setItems] = useState<TipoMaquina[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -71,10 +73,12 @@ export function TiposMaquinaPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tipo de Maquinas</h1>
-        <Button onClick={abrirNuevo}>
-          <Plus />
-          Nuevo Tipo
-        </Button>
+        {puedeEditar && (
+          <Button onClick={abrirNuevo}>
+            <Plus />
+            Nuevo Tipo
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -106,14 +110,16 @@ export function TiposMaquinaPage() {
                 <TableCell>{item.codigo ?? '-'}</TableCell>
                 <TableCell className="font-medium">{item.nombre}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {puedeEditar && (
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => abrirEditar(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => eliminar(item)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

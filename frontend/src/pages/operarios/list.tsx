@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface OperarioRow {
   id: number
@@ -17,6 +18,7 @@ interface OperarioRow {
 }
 
 export function OperariosList() {
+  const puedeEditar = usePuedeEditar('ajustes')
   const [buscar, setBuscar] = useState('')
   const go = useGo()
   const { mutate: deleteOperario } = useDelete()
@@ -34,12 +36,14 @@ export function OperariosList() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Operarios</h1>
-        <Button asChild>
-          <Link to="/operarios/nuevo">
-            <Plus />
-            Nuevo Operario
-          </Link>
-        </Button>
+        {puedeEditar && (
+          <Button asChild>
+            <Link to="/operarios/nuevo">
+              <Plus />
+              Nuevo Operario
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Input
@@ -82,22 +86,24 @@ export function OperariosList() {
                   <Badge variant={o.activo ? 'default' : 'secondary'}>{o.activo ? 'Activo' : 'Inactivo'}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => go({ to: `/operarios/${o.id}/editar` })}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Eliminar a ${o.nombre}?`)) {
-                          deleteOperario({ resource: 'operarios', id: o.id })
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {puedeEditar && (
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => go({ to: `/operarios/${o.id}/editar` })}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          if (confirm(`Eliminar a ${o.nombre}?`)) {
+                            deleteOperario({ resource: 'operarios', id: o.id })
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

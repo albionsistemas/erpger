@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Precio {
   id: number
@@ -48,6 +49,7 @@ const MODO_VENTA_LABEL: Record<string, string> = {
 export function ArticulosShow() {
   const { id } = useParams()
   const { result, query } = useShow<ArticuloDetalle>({ resource: 'articulos', id: Number(id) })
+  const puedeEditar = usePuedeEditar('compras')
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [precioUsd, setPrecioUsd] = useState('')
@@ -81,18 +83,20 @@ export function ArticulosShow() {
           {result.nombre} <span className="text-base font-normal text-muted-foreground">Codigo {result.id}</span>
           {esNuevo(result.creadoEn) && <NewBadge />}
         </h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setDialogOpen(true)}>
-            <DollarSign />
-            Cargar costo
-          </Button>
-          <Button asChild variant="outline">
-            <Link to={`/articulos/${result.id}/editar`}>
-              <Pencil />
-              Editar
-            </Link>
-          </Button>
-        </div>
+        {puedeEditar && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(true)}>
+              <DollarSign />
+              Cargar costo
+            </Button>
+            <Button asChild variant="outline">
+              <Link to={`/articulos/${result.id}/editar`}>
+                <Pencil />
+                Editar
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card>

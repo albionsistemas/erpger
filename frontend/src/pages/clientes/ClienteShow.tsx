@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Contacto {
   id: number
@@ -36,6 +37,7 @@ interface Cliente {
 const VACIO = { nombre: '', cargo: '', telefono: '', email: '' }
 
 export function ClienteShow() {
+  const puedeEditar = usePuedeEditar('ventas')
   const { id } = useParams()
   const [cliente, setCliente] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(true)
@@ -164,10 +166,12 @@ export function ClienteShow() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-muted-foreground">Contactos</h2>
-        <Button size="sm" onClick={abrirNuevo}>
-          <Plus className="h-4 w-4" />
-          Agregar contacto
-        </Button>
+        {puedeEditar && (
+          <Button size="sm" onClick={abrirNuevo}>
+            <Plus className="h-4 w-4" />
+            Agregar contacto
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -207,14 +211,16 @@ export function ClienteShow() {
                 <p className="text-sm text-muted-foreground">{c.telefono ?? '-'}</p>
                 <p className="text-sm text-muted-foreground">{c.email ?? '-'}</p>
               </div>
-              <div className="flex flex-col gap-1">
-                <Button variant="ghost" size="icon" onClick={() => abrirEditar(c)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => eliminar(c)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {puedeEditar && (
+                <div className="flex flex-col gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => abrirEditar(c)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => eliminar(c)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

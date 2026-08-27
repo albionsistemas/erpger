@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { usePuedeEditar } from '@/auth/usePermiso'
+import { SinPermiso } from '@/components/SinPermiso'
 
 interface OrdenTrabajoValues {
   ofId: number
@@ -68,6 +70,9 @@ export function OrdenTrabajoForm({ id }: { id?: number }) {
     const newId = (result as any)?.data?.id ?? id
     navigate(newId ? `/ordenes-trabajo/${newId}` : '/ordenes-trabajo')
   }
+
+  const puedeEditar = usePuedeEditar('planificacion')
+  if (!puedeEditar) return <SinPermiso />
 
   return (
     <Card className="max-w-2xl">

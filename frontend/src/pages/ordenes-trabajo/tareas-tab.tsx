@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface Tarea {
   id: number
@@ -17,6 +18,7 @@ interface Tarea {
 }
 
 export function TareasTab({ otId }: { otId: number }) {
+  const puedeEditar = usePuedeEditar('planificacion')
   const [tareas, setTareas] = useState<Tarea[]>([])
   const [nuevo, setNuevo] = useState({ nombreTarea: '', sectorId: '', fechaInicio: '' })
   const { items: sectores } = useCatalogo('sectores-produccion')
@@ -45,39 +47,41 @@ export function TareasTab({ otId }: { otId: number }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-end gap-2">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Tarea</label>
-          <Input value={nuevo.nombreTarea} onChange={(e) => setNuevo((v) => ({ ...v, nombreTarea: e.target.value }))} />
+      {puedeEditar && (
+        <div className="flex items-end gap-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Tarea</label>
+            <Input value={nuevo.nombreTarea} onChange={(e) => setNuevo((v) => ({ ...v, nombreTarea: e.target.value }))} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Sector</label>
+            <Select value={nuevo.sectorId} onValueChange={(val) => setNuevo((v) => ({ ...v, sectorId: val }))}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sector..." />
+              </SelectTrigger>
+              <SelectContent>
+                {sectores.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground">Inicio</label>
+            <Input
+              type="date"
+              value={nuevo.fechaInicio}
+              onChange={(e) => setNuevo((v) => ({ ...v, fechaInicio: e.target.value }))}
+            />
+          </div>
+          <Button onClick={agregar}>
+            <Plus className="h-4 w-4" />
+            Agregar
+          </Button>
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Sector</label>
-          <Select value={nuevo.sectorId} onValueChange={(val) => setNuevo((v) => ({ ...v, sectorId: val }))}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sector..." />
-            </SelectTrigger>
-            <SelectContent>
-              {sectores.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Inicio</label>
-          <Input
-            type="date"
-            value={nuevo.fechaInicio}
-            onChange={(e) => setNuevo((v) => ({ ...v, fechaInicio: e.target.value }))}
-          />
-        </div>
-        <Button onClick={agregar}>
-          <Plus className="h-4 w-4" />
-          Agregar
-        </Button>
-      </div>
+      )}
 
       <Table>
         <TableHeader>
@@ -99,9 +103,11 @@ export function TareasTab({ otId }: { otId: number }) {
               <TableCell>{t.fechaInicio?.slice(0, 10) ?? '-'}</TableCell>
               <TableCell>{t.fechaTerminacion?.slice(0, 10) ?? '-'}</TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="icon" onClick={() => eliminar(t.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {puedeEditar && (
+                  <Button variant="ghost" size="icon" onClick={() => eliminar(t.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

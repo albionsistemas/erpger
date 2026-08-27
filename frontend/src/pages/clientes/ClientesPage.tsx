@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface ClienteRow {
   id: number
@@ -43,6 +44,7 @@ const VACIO: FormValues = {
 }
 
 export function ClientesPage() {
+  const puedeEditar = usePuedeEditar('ventas')
   const [buscar, setBuscar] = useState('')
   const filters: CrudFilter[] = buscar ? [{ field: 'buscar', operator: 'eq', value: buscar }] : []
 
@@ -107,10 +109,12 @@ export function ClientesPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Clientes</h1>
-        <Button onClick={abrirNuevo}>
-          <Plus />
-          Nuevo Cliente
-        </Button>
+        {puedeEditar && (
+          <Button onClick={abrirNuevo}>
+            <Plus />
+            Nuevo Cliente
+          </Button>
+        )}
       </div>
 
       <Input
@@ -169,12 +173,16 @@ export function ClientesPage() {
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => abrirEditar(c.id)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => eliminar(c)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {puedeEditar && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => abrirEditar(c.id)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => eliminar(c)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

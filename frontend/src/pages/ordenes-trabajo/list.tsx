@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
+import { usePuedeEditar } from '@/auth/usePermiso'
 
 interface OrdenTrabajoRow {
   id: number
@@ -19,6 +20,7 @@ interface OrdenTrabajoRow {
 }
 
 export function OrdenesTrabajoList() {
+  const puedeEditar = usePuedeEditar('planificacion')
   const [buscar, setBuscar] = useState('')
   const [searchParams] = useSearchParams()
   const ofId = searchParams.get('ofId')
@@ -40,12 +42,14 @@ export function OrdenesTrabajoList() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Ordenes de Trabajo</h1>
-        <Button asChild>
-          <Link to={ofId ? `/ordenes-trabajo/nueva?ofId=${ofId}` : '/ordenes-trabajo/nueva'}>
-            <Plus />
-            Nueva OT
-          </Link>
-        </Button>
+        {puedeEditar && (
+          <Button asChild>
+            <Link to={ofId ? `/ordenes-trabajo/nueva?ofId=${ofId}` : '/ordenes-trabajo/nueva'}>
+              <Plus />
+              Nueva OT
+            </Link>
+          </Button>
+        )}
       </div>
 
       <Input
@@ -96,20 +100,24 @@ export function OrdenesTrabajoList() {
                     <Button variant="ghost" size="icon" onClick={() => go({ to: `/ordenes-trabajo/${ot.id}` })}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => go({ to: `/ordenes-trabajo/${ot.id}/editar` })}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm(`Eliminar OT ${ot.numeroOt}?`)) {
-                          deleteOt({ resource: 'ordenes-trabajo', id: ot.id })
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {puedeEditar && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => go({ to: `/ordenes-trabajo/${ot.id}/editar` })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (confirm(`Eliminar OT ${ot.numeroOt}?`)) {
+                              deleteOt({ resource: 'ordenes-trabajo', id: ot.id })
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

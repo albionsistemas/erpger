@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
 import { apiClient } from '@/lib/api-client'
+import { usePuedeEditar } from '@/auth/usePermiso'
+import { SinPermiso } from '@/components/SinPermiso'
 
 interface OperarioValues {
   nombre: string
@@ -46,6 +48,7 @@ export function OperarioForm({ id }: { id?: number }) {
   }, [query?.data])
 
   const { items: sectores } = useCatalogo('sectores-produccion')
+  const puedeEditar = usePuedeEditar('ajustes')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +70,8 @@ export function OperarioForm({ id }: { id?: number }) {
       setSubiendoImagen(false)
     }
   }
+
+  if (!puedeEditar) return <SinPermiso />
 
   return (
     <Card className="max-w-lg">
