@@ -66,10 +66,11 @@ solo exige estar autenticado (ej: `/catalogos/*`, lectura de `/articulos`).
 Reparto de modulos (definido por el negocio, no por como esta armado el
 codigo -- Ingenieria y Planificacion comparten backend/DB pero son
 permisos distintos):
-- `ingenieria`: `/maquinas`, `/operarios`, `/despiece-maquinas`,
+- `ingenieria`: `/maquinas`, `/despiece-maquinas`,
   `/despiece-ensambles`, `/despiece-ot`, `/ot-cambios`
 - `planificacion`: `/ordenes-fabricacion`, `/ordenes-trabajo` (+ sus
   sub-recursos), `/planificacion-corte`
+- `ajustes`: `/empresas`, `/rubros`, `/operarios`
 
 Las imagenes de perfil se guardan en `uploads/perfiles/` y se sirven
 como archivos estaticos en `/uploads/...`. Para produccion, cambiar

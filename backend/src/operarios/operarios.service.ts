@@ -50,4 +50,9 @@ export class OperariosService {
         await this.findOne(id);
         await this.prisma.operario.delete({ where: { id } });
     }
+
+    async updateImagen(id: bigint, imagenUrl: string) {
+        await this.findOne(id);
+        return this.prisma.operario.update({ where: { id }, data: { imagenUrl } });
+    }
 }

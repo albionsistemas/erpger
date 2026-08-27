@@ -27,6 +27,7 @@ import { CategoriasPage } from './pages/compras/CategoriasPage'
 import { SubcategoriasPage } from './pages/compras/SubcategoriasPage'
 import { MonedasPage } from './pages/compras/MonedasPage'
 import { ArticulosList, ArticulosCreate, ArticulosEdit, ArticulosShow } from './pages/articulos'
+import { OperariosList, OperariosCreate, OperariosEdit } from './pages/operarios'
 import { EmpresasPage } from './pages/ajustes/EmpresasPage'
 import { RubrosPage } from './pages/ajustes/RubrosPage'
 import { ClientesPage } from './pages/clientes/ClientesPage'
@@ -73,6 +74,13 @@ function App() {
             show: '/articulos/:id',
             meta: { label: 'Articulos' },
           },
+          {
+            name: 'operarios',
+            list: '/operarios',
+            create: '/operarios/nuevo',
+            edit: '/operarios/:id/editar',
+            meta: { label: 'Operarios' },
+          },
         ]}
         options={{
           syncWithLocation: true,
@@ -117,6 +125,11 @@ function App() {
             <Route path="/compras/monedas" element={<MonedasPage />} />
             <Route path="/ajustes/empresas" element={<EmpresasPage />} />
             <Route path="/ajustes/rubros" element={<RubrosPage />} />
+            <Route path="/operarios">
+              <Route index element={<OperariosList />} />
+              <Route path="nuevo" element={<OperariosCreate />} />
+              <Route path=":id/editar" element={<OperariosEdit />} />
+            </Route>
             <Route path="/ventas/clientes" element={<ClientesPage />} />
             <Route path="/ventas/clientes/:id" element={<ClienteShow />} />
             <Route path="/articulos">

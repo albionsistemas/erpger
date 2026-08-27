@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useForm } from '@refinedev/core'
 import { useNavigate } from 'react-router-dom'
+import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCatalogo } from '@/hooks/useCatalogo'
+import { apiClient } from '@/lib/api-client'
 
 interface OperarioValues {
   nombre: string
@@ -29,6 +31,7 @@ export function OperarioForm({ id }: { id?: number }) {
   })
 
   const [values, setValues] = useState<OperarioValues>(VACIO)
+  const [subiendoImagen, setSubiendoImagen] = useState(false)
 
   useEffect(() => {
     const record = query?.data?.data as any
@@ -50,6 +53,21 @@ export function OperarioForm({ id }: { id?: number }) {
     navigate('/operarios')
   }
 
+  const subirImagen = async (file: File) => {
+    if (!isEdit) return
+    setSubiendoImagen(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await apiClient.post(`/operarios/${id}/imagen`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setValues((v) => ({ ...v, imagenUrl: res.data.imagenUrl }))
+    } finally {
+      setSubiendoImagen(false)
+    }
+  }
+
   return (
     <Card className="max-w-lg">
       <CardHeader>
@@ -65,6 +83,37 @@ export function OperarioForm({ id }: { id?: number }) {
               value={values.nombre}
               onChange={(e) => setValues((v) => ({ ...v, nombre: e.target.value }))}
             />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Foto</Label>
+            <div className="flex items-center gap-3">
+              {values.imagenUrl ? (
+                <img src={values.imagenUrl} alt={values.nombre} className="h-16 w-16 rounded-full object-cover" />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-muted" />
+              )}
+              <div>
+                <input
+                  id="imagen"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && subirImagen(e.target.files[0])}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!isEdit || subiendoImagen}
+                  onClick={() => document.getElementById('imagen')?.click()}
+                >
+                  <Upload className="h-4 w-4" />
+                  {subiendoImagen ? 'Subiendo...' : 'Subir foto'}
+                </Button>
+                {!isEdit && <p className="text-xs text-muted-foreground">Guarda el operario primero para poder subir la foto.</p>}
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
