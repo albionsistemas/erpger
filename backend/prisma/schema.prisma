@@ -193,6 +193,7 @@ model TipoCambioBom {
 model Rubro {
   id                 Int                @id @default(autoincrement()) @db.SmallInt
   nombre             String             @unique @db.VarChar(60)
+  imagenUrl          String?            @map("imagen_url") @db.VarChar(255)
   articulos          Articulo[]
   maquinasRubros     MaquinaRubro[]
   ordenesFabricacion OrdenFabricacion[]

@@ -1,4 +1,21 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Query,
+    UploadedFile,
+    UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { RubrosService } from './rubros.service';
 import { CreateRubroDto } from './dto/create-rubro.dto';
 import { UpdateRubroDto } from './dto/update-rubro.dto';
@@ -40,5 +57,30 @@ export class RubrosController {
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.rubros.remove(id);
+    }
+
+    @Permiso('ajustes', 'EDITAR')
+    @Post(':id/imagen')
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './uploads/rubros',
+                filename: (_req, file, cb) => {
+                    const nombreUnico = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+                    cb(null, nombreUnico);
+                },
+            }),
+            limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+            fileFilter: (_req, file, cb) => {
+                if (!file.mimetype.startsWith('image/')) {
+                    cb(new Error('El archivo debe ser una imagen'), false);
+                    return;
+                }
+                cb(null, true);
+            },
+        }),
+    )
+    async uploadImagen(@Param('id', ParseIntPipe) id: number, @UploadedFile() file: Express.Multer.File) {
+        return this.rubros.updateImagen(id, `/uploads/rubros/${file.filename}`);
     }
 }

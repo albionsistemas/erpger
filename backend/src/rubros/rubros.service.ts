@@ -34,4 +34,9 @@ export class RubrosService {
         await this.findOne(id);
         await this.prisma.rubro.delete({ where: { id } });
     }
+
+    async updateImagen(id: number, imagenUrl: string) {
+        await this.findOne(id);
+        return this.prisma.rubro.update({ where: { id }, data: { imagenUrl } });
+    }
 }
