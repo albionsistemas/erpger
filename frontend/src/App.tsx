@@ -32,6 +32,7 @@ import { EmpresasPage } from './pages/ajustes/EmpresasPage'
 import { RubrosPage } from './pages/ajustes/RubrosPage'
 import { ClientesPage } from './pages/clientes/ClientesPage'
 import { ClienteShow } from './pages/clientes/ClienteShow'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
   return (
@@ -144,6 +145,7 @@ function App() {
         <UnsavedChangesNotifier />
         <DocumentTitleHandler />
       </Refine>
+      <Toaster />
     </BrowserRouter>
   )
 }
