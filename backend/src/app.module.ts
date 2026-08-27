@@ -17,6 +17,7 @@ import { DespieceModule } from './despiece/despiece.module';
 import { OtCambiosModule } from './ot-cambios/ot-cambios.module';
 import { PlanificacionCorteModule } from './planificacion-corte/planificacion-corte.module';
 import { ComprasModule } from './compras/compras.module';
+import { RubrosModule } from './rubros/rubros.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -39,6 +40,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
         OtCambiosModule,
         PlanificacionCorteModule,
         ComprasModule,
+        RubrosModule,
     ],
     providers: [
         // Orden importa: JwtAuthGuard puebla req.user antes de que

@@ -28,6 +28,7 @@ import { SubcategoriasPage } from './pages/compras/SubcategoriasPage'
 import { MonedasPage } from './pages/compras/MonedasPage'
 import { ArticulosList, ArticulosCreate, ArticulosEdit, ArticulosShow } from './pages/articulos'
 import { EmpresasPage } from './pages/ajustes/EmpresasPage'
+import { RubrosPage } from './pages/ajustes/RubrosPage'
 import { ClientesPage } from './pages/clientes/ClientesPage'
 import { ClienteShow } from './pages/clientes/ClienteShow'
 
@@ -115,6 +116,7 @@ function App() {
             <Route path="/compras/subcategorias" element={<SubcategoriasPage />} />
             <Route path="/compras/monedas" element={<MonedasPage />} />
             <Route path="/ajustes/empresas" element={<EmpresasPage />} />
+            <Route path="/ajustes/rubros" element={<RubrosPage />} />
             <Route path="/ventas/clientes" element={<ClientesPage />} />
             <Route path="/ventas/clientes/:id" element={<ClienteShow />} />
             <Route path="/articulos">
