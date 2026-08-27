@@ -409,6 +409,7 @@ model OtTercero {
   fechaEntrega DateTime?    @map("fecha_entrega") @db.Date
   ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([otId], map: "idx_ot_terceros_ot")
   @@map("ot_terceros")
   @@schema("ingenieria")
 }
@@ -420,6 +421,7 @@ model OtImagen {
   orden        Int          @default(0) @db.SmallInt
   ordenTrabajo OrdenTrabajo @relation(fields: [otId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@index([otId], map: "idx_ot_imagenes_ot")
   @@map("ot_imagenes")
   @@schema("ingenieria")
 }
