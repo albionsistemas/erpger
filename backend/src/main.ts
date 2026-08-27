@@ -3,9 +3,12 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { uploadsAuthMiddleware } from './common/uploads-auth.middleware';
 
 // La mayoria de los IDs del schema son BIGINT (mapeados a BigInt en JS),
 // y JSON.stringify no sabe serializar BigInt de forma nativa. Como estos
@@ -20,7 +23,12 @@ async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
     app.enableCors();
+    app.use(cookieParser());
     app.setGlobalPrefix('api');
+    // Requiere la cookie de sesion (ver AuthController.login/logout) antes
+    // de dejar pasar a los archivos estaticos -- useStaticAssets corre
+    // fuera del pipeline de Nest, asi que no hay otra forma de gatearlo.
+    app.use('/uploads', uploadsAuthMiddleware(app.get(JwtService)));
     app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/uploads' });
     app.useGlobalPipes(
         new ValidationPipe({

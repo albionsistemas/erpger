@@ -20,6 +20,10 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
+    // Limpia tambien la cookie uploads_token del lado del servidor (ver
+    // uploads-auth.middleware.ts); si la llamada falla igual se limpia
+    // el token local, no bloquea el logout.
+    await apiClient.post('/auth/logout').catch(() => {})
     tokenStorage.clear()
     return { success: true, redirectTo: '/login' }
   },
