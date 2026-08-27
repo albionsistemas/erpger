@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { ModoVenta } from '@prisma/client';
 
 export class CreateArticuloDto {
@@ -51,4 +51,11 @@ export class CreateArticuloDto {
     @IsString()
     @MaxLength(255)
     pdfUrl?: string;
+
+    // Global por articulo (no por deposito) -- se compara contra el
+    // total de existencias en todos los depositos, ver ExistenciasService.resumen().
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    stockMinimo?: number;
 }

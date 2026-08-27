@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useLogout, useGetIdentity } from '@refinedev/core'
-import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut, Boxes, ListTree, DollarSign, Package, Building2, Users, Sprout, HardHat } from 'lucide-react'
+import { FileText, ClipboardList, Cog, Tags, LayoutGrid, LogOut, Boxes, ListTree, DollarSign, Package, Building2, Users, Sprout, HardHat, Warehouse, PackageSearch, ArrowLeftRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { getCurrentPayload } from '@/auth/token-storage'
@@ -14,10 +14,12 @@ interface NavItem {
 }
 
 // Ingenieria = maquinas/BOM/layout/tecnico. Planificacion = OF/OT
-// (cuando y quien las ejecuta). Ventas/Compras/RRHH/Almacen se suman
-// como grupos nuevos a medida que se construyan.
-// "Layout" apunta a una pantalla placeholder (ver pages/layout) hasta
-// que definamos el modelo de datos (equivalente al legacy 'lineas').
+// (cuando y quien las ejecuta). RRHH se suma como grupo nuevo cuando
+// se construya. "Layout" apunta a una pantalla placeholder (ver
+// pages/layout) hasta que definamos el modelo de datos (equivalente
+// al legacy 'lineas'). "Inventario" usa la clave interna 'almacen'
+// (el modulo ya estaba seedeado sin pantallas atras, ver 039_inventario.sql
+// -- solo cambio el nombre visible, no la clave).
 const NAV: { grupo: string; items: NavItem[] }[] = [
   {
     grupo: 'Ingenieria',
@@ -45,6 +47,14 @@ const NAV: { grupo: string; items: NavItem[] }[] = [
       { label: 'Subcategorias', to: '/compras/subcategorias', icon: ListTree, modulo: 'compras' },
       { label: 'Monedas', to: '/compras/monedas', icon: DollarSign, modulo: 'compras' },
       { label: 'Articulos', to: '/articulos', icon: Package, modulo: 'compras' },
+    ],
+  },
+  {
+    grupo: 'Inventario',
+    items: [
+      { label: 'Depositos', to: '/inventario/depositos', icon: Warehouse, modulo: 'almacen' },
+      { label: 'Existencias', to: '/inventario/existencias', icon: PackageSearch, modulo: 'almacen' },
+      { label: 'Movimientos', to: '/inventario/movimientos', icon: ArrowLeftRight, modulo: 'almacen' },
     ],
   },
   {

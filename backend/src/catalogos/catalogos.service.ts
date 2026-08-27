@@ -36,4 +36,8 @@ export class CatalogosService {
     rubros() {
         return this.prisma.rubro.findMany({ orderBy: { nombre: 'asc' } });
     }
+
+    motivosMovimiento() {
+        return this.prisma.motivoMovimiento.findMany({ orderBy: { nombre: 'asc' } });
+    }
 }

@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["catalogo", "core", "ingenieria"]
+  schemas  = ["catalogo", "core", "ingenieria", "inventario"]
 }
 
 model Usuario {
@@ -39,6 +39,8 @@ model Usuario {
   etapasCompletadas        OtEtapa[]              @relation("OtEtapaUsuario")
   planificacionesCreadas   PlanificacionCorte[]   @relation("PlanificacionCreadoPor")
   tareasCreadas            Tarea[]                @relation("TareaCreadoPor")
+  depositosCreados         Deposito[]             @relation("DepositoCreadoPor")
+  movimientosStockCreados  MovimientoStock[]      @relation("MovimientoStockUsuario")
 
   @@index([empresaId], map: "idx_usuarios_empresa")
   @@map("usuarios")
@@ -63,6 +65,7 @@ model Empresa {
   bancoCbu       String?   @map("banco_cbu") @db.VarChar(40)
   bancoAlias     String?   @map("banco_alias") @db.VarChar(150)
   usuarios       Usuario[]
+  depositos      DepositoEmpresa[]
 
   @@map("empresas")
   @@schema("core")
@@ -255,7 +258,10 @@ model Articulo {
   imagenUrl             String?            @map("imagen_url") @db.VarChar(255)
   pdfUrl                String?            @map("pdf_url") @db.VarChar(255)
   largoComercial        Int?               @map("largo_comercial")
+  stockMinimo           Decimal?           @map("stock_minimo") @db.Decimal(14, 2)
   precios               ArticuloPrecio[]
+  existencias           Existencia[]
+  movimientosStock      MovimientoStock[]
   categoria             Categoria?         @relation(fields: [categoriaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   creador               Usuario?           @relation("ArticuloCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
   rubro                 Rubro?             @relation(fields: [rubroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -665,4 +671,107 @@ enum ModoVenta {
 
   @@map("modo_venta")
   @@schema("catalogo")
+}
+
+// =====================================================================
+// Inventario: Depositos, Existencias (stock actual, materializado a
+// partir del ledger) y Movimientos de Stock (entradas/salidas/
+// transferencias, inmutable -- para corregir un error se postea un
+// movimiento nuevo, nunca se edita/borra uno existente).
+// =====================================================================
+
+model Deposito {
+  id          BigInt            @id @default(autoincrement())
+  nombre      String            @db.VarChar(100)
+  direccion   String?           @db.VarChar(255)
+  activo      Boolean           @default(true)
+  creadoPor   BigInt?           @map("creado_por")
+  creadoEn    DateTime          @default(now()) @map("creado_en") @db.Timestamptz(6)
+  creador     Usuario?          @relation("DepositoCreadoPor", fields: [creadoPor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empresas    DepositoEmpresa[]
+  existencias Existencia[]
+  movimientosOrigen  MovimientoStock[] @relation("MovimientoDeposito")
+  movimientosDestino MovimientoStock[] @relation("MovimientoDepositoDestino")
+
+  @@map("depositos")
+  @@schema("inventario")
+}
+
+model DepositoEmpresa {
+  depositoId BigInt   @map("deposito_id")
+  empresaId  BigInt   @map("empresa_id")
+  deposito   Deposito @relation(fields: [depositoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  empresa    Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([depositoId, empresaId])
+  @@map("depositos_empresas")
+  @@schema("inventario")
+}
+
+model Existencia {
+  id            BigInt   @id @default(autoincrement())
+  depositoId    BigInt   @map("deposito_id")
+  articuloId    BigInt   @map("articulo_id")
+  cantidad      Decimal  @default(0) @db.Decimal(14, 2)
+  actualizadoEn DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+  deposito      Deposito @relation(fields: [depositoId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  articulo      Articulo @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([depositoId, articuloId])
+  @@index([articuloId], map: "idx_existencias_articulo")
+  @@map("existencias")
+  @@schema("inventario")
+}
+
+enum TipoMovimientoStock {
+  ENTRADA
+  SALIDA
+  TRANSFERENCIA
+
+  @@map("tipo_movimiento_stock")
+  @@schema("inventario")
+}
+
+enum AplicaMovimiento {
+  ENTRADA
+  SALIDA
+  AMBOS
+
+  @@map("aplica_movimiento")
+  @@schema("inventario")
+}
+
+model MotivoMovimiento {
+  id          Int                 @id @default(autoincrement()) @db.SmallInt
+  nombre      String              @unique @db.VarChar(60)
+  aplicaA     AplicaMovimiento    @map("aplica_a")
+  movimientos MovimientoStock[]
+
+  @@map("motivos_movimiento")
+  @@schema("inventario")
+}
+
+model MovimientoStock {
+  id                BigInt              @id @default(autoincrement())
+  depositoId        BigInt              @map("deposito_id")
+  depositoDestinoId BigInt?             @map("deposito_destino_id") // solo TRANSFERENCIA
+  articuloId        BigInt              @map("articulo_id")
+  tipo              TipoMovimientoStock
+  cantidad          Decimal             @db.Decimal(14, 2) // siempre positiva, el signo lo da `tipo`
+  motivoId          Int?                @map("motivo_id") @db.SmallInt
+  referencia        String?             @db.VarChar(200)
+  nota              String?
+  usuarioId         BigInt?             @map("usuario_id")
+  fecha             DateTime            @default(now()) @db.Timestamptz(6)
+  deposito          Deposito            @relation("MovimientoDeposito", fields: [depositoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  depositoDestino   Deposito?           @relation("MovimientoDepositoDestino", fields: [depositoDestinoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  articulo          Articulo            @relation(fields: [articuloId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  motivo            MotivoMovimiento?   @relation(fields: [motivoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario           Usuario?            @relation("MovimientoStockUsuario", fields: [usuarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([depositoId], map: "idx_movimientos_stock_deposito")
+  @@index([articuloId], map: "idx_movimientos_stock_articulo")
+  @@index([fecha], map: "idx_movimientos_stock_fecha")
+  @@map("movimientos_stock")
+  @@schema("inventario")
 }

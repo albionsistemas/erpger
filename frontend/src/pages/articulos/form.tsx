@@ -23,6 +23,7 @@ interface ArticuloValues {
   descripcion?: string
   imagenUrl?: string
   pdfUrl?: string
+  stockMinimo?: number
 }
 
 const VACIO: ArticuloValues = { nombre: '' }
@@ -64,6 +65,7 @@ export function ArticuloForm({ id }: { id?: number }) {
         descripcion: record.descripcion,
         imagenUrl: record.imagenUrl,
         pdfUrl: record.pdfUrl,
+        stockMinimo: record.stockMinimo !== null && record.stockMinimo !== undefined ? Number(record.stockMinimo) : undefined,
       })
     }
   }, [query?.data])
@@ -208,6 +210,19 @@ export function ArticuloForm({ id }: { id?: number }) {
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="nc">NC (codigo aduanero)</Label>
             <Input id="nc" value={values.nc ?? ''} onChange={(e) => setValues((v) => ({ ...v, nc: e.target.value }))} />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="stockMinimo">Stock minimo (Inventario)</Label>
+            <Input
+              id="stockMinimo"
+              type="number"
+              step="0.01"
+              min="0"
+              value={values.stockMinimo ?? ''}
+              onChange={(e) => setValues((v) => ({ ...v, stockMinimo: e.target.value ? Number(e.target.value) : undefined }))}
+              placeholder="Sin minimo definido"
+            />
           </div>
 
           <div className="col-span-2 flex flex-col gap-1.5">

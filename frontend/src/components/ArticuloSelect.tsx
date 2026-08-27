@@ -11,6 +11,7 @@ interface ArticuloOption {
   nombre: string
   codigoAlbion: string | null
   largoComercial?: number | null
+  modoVenta?: string | null
 }
 
 interface ArticuloSelectProps {

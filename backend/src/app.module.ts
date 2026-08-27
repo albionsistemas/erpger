@@ -18,6 +18,9 @@ import { OtCambiosModule } from './ot-cambios/ot-cambios.module';
 import { PlanificacionCorteModule } from './planificacion-corte/planificacion-corte.module';
 import { ComprasModule } from './compras/compras.module';
 import { RubrosModule } from './rubros/rubros.module';
+import { DepositosModule } from './depositos/depositos.module';
+import { ExistenciasModule } from './existencias/existencias.module';
+import { MovimientosStockModule } from './movimientos-stock/movimientos-stock.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -41,6 +44,9 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
         PlanificacionCorteModule,
         ComprasModule,
         RubrosModule,
+        DepositosModule,
+        ExistenciasModule,
+        MovimientosStockModule,
     ],
     providers: [
         // Orden importa: JwtAuthGuard puebla req.user antes de que

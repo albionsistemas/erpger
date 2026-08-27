@@ -28,6 +28,9 @@ import { SubcategoriasPage } from './pages/compras/SubcategoriasPage'
 import { MonedasPage } from './pages/compras/MonedasPage'
 import { ArticulosList, ArticulosCreate, ArticulosEdit, ArticulosShow } from './pages/articulos'
 import { OperariosList, OperariosCreate, OperariosEdit } from './pages/operarios'
+import { DepositosPage } from './pages/inventario/DepositosPage'
+import { ExistenciasPage } from './pages/inventario/ExistenciasPage'
+import { MovimientosStockPage } from './pages/inventario/MovimientosStockPage'
 import { EmpresasPage } from './pages/ajustes/EmpresasPage'
 import { RubrosPage } from './pages/ajustes/RubrosPage'
 import { ClientesPage } from './pages/clientes/ClientesPage'
@@ -124,6 +127,9 @@ function App() {
             <Route path="/compras/categorias" element={<CategoriasPage />} />
             <Route path="/compras/subcategorias" element={<SubcategoriasPage />} />
             <Route path="/compras/monedas" element={<MonedasPage />} />
+            <Route path="/inventario/depositos" element={<DepositosPage />} />
+            <Route path="/inventario/existencias" element={<ExistenciasPage />} />
+            <Route path="/inventario/movimientos" element={<MovimientosStockPage />} />
             <Route path="/ajustes/empresas" element={<EmpresasPage />} />
             <Route path="/ajustes/rubros" element={<RubrosPage />} />
             <Route path="/operarios">

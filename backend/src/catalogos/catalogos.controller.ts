@@ -39,4 +39,9 @@ export class CatalogosController {
     rubros() {
         return this.catalogos.rubros();
     }
+
+    @Get('motivos-movimiento')
+    motivosMovimiento() {
+        return this.catalogos.motivosMovimiento();
+    }
 }
